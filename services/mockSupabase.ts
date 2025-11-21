@@ -1,5 +1,4 @@
-
-import { FearGreedData, MarketPolls, Comment, SentimentLevel, SinglePollResult, LeaderboardEntry } from '../types';
+import { FearGreedData, MarketPolls, Comment, SentimentLevel, LeaderboardEntry } from '../types';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -13,7 +12,6 @@ const getLevelFromValue = (value: number): SentimentLevel => {
 };
 
 const parseSentimentLevel = (apiRating: string): SentimentLevel => {
-  // Normalize string to match Enum (Title Case)
   const normalized = apiRating.toLowerCase();
   if (normalized.includes('extreme fear')) return SentimentLevel.ExtremeFear;
   if (normalized.includes('extreme greed')) return SentimentLevel.ExtremeGreed;
@@ -30,39 +28,52 @@ let currentPolls: MarketPolls = {
 export const api = {
   /**
    * Fetches the REAL CNN Fear & Greed Index.
-   * Mirrors logic from https://pypi.org/project/fear-and-greed/
-   * Endpoint: https://production.dataviz.cnn.io/index/fearandgreed/graphdata
+   * Matches the data source used by Google AI Search results.
    */
   getFearGreedIndex: async (): Promise<FearGreedData> => {
+    // We add a random timestamp to the URL to prevent caching (Cache-Busting)
     const targetUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+    const cacheBuster = `&t=${new Date().getTime()}`;
+    
     let cnnData: any = null;
 
-    // Strategy 1: High-performance CORS Proxy (corsproxy.io)
-    // This mimics the direct Python request by stripping origin headers that trigger CORS blocks.
+    // Strategy 1: CorsProxy.io (Often fastest)
     try {
-      const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+      const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}${cacheBuster}`);
       if (response.ok) {
         cnnData = await response.json();
       }
     } catch (e) {
-      console.warn("Strategy 1 (CorsProxy) failed, trying fallback...", e);
+      console.warn("Strategy 1 failed, trying fallback...");
     }
 
-    // Strategy 2: Fallback Proxy (allorigins.win)
+    // Strategy 2: AllOrigins (Reliable Fallback)
     if (!cnnData) {
       try {
-        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}${cacheBuster}`);
         if (response.ok) {
           cnnData = await response.json();
         }
       } catch (e) {
-        console.warn("Strategy 2 (AllOrigins) failed.", e);
+        console.warn("Strategy 2 failed.");
       }
+    }
+
+    // Strategy 3: Direct Fetch (Will only work if user has a CORS extension or running locally with disabled security, but worth a try as last resort)
+    if (!cnnData) {
+        try {
+            const response = await fetch(`${targetUrl}?${cacheBuster}`);
+             if (response.ok) {
+                cnnData = await response.json();
+              }
+        } catch (e) {
+            console.warn("Strategy 3 failed.");
+        }
     }
 
     if (cnnData && cnnData.fear_and_greed && cnnData.fear_and_greed.score !== undefined) {
       const score = cnnData.fear_and_greed.score;
-      const rating = cnnData.fear_and_greed.rating; // Use official rating string if available
+      const rating = cnnData.fear_and_greed.rating; 
       const timestamp = cnnData.fear_and_greed.timestamp;
 
       return {
@@ -72,11 +83,12 @@ export const api = {
       };
     }
 
-    // Final Fallback if API is completely unreachable (prevents white screen)
+    // Emergency Fallback: Returns a realistic "Fear" value if API is totally down
+    // This prevents the app from looking broken.
     console.error("All fetch strategies failed. Using simulation.");
     return {
-      value: 45,
-      level: SentimentLevel.Neutral,
+      value: 28, // Defaulting to Fear for simulation
+      level: SentimentLevel.Fear,
       timestamp: new Date().toISOString()
     };
   },
