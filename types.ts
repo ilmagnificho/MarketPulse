@@ -9,10 +9,18 @@ export enum SentimentLevel {
 
 export type Language = 'en' | 'ko' | 'zh' | 'ja' | 'es';
 
+export interface HistoryContext {
+  lastSeenDate: string;
+  daysAgo: number;
+  nasdaqChange: number;
+  nyseChange: number;
+}
+
 export interface FearGreedData {
   value: number;
   level: SentimentLevel;
   timestamp: string;
+  history?: HistoryContext;
 }
 
 export interface Quote {

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ThePulse from './components/ThePulse';
 import TheCrowd from './components/TheCrowd';
@@ -35,6 +34,16 @@ const Header: React.FC = () => {
             </a>
           </div>
         </div>
+        <style>{`
+          @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+          }
+          .animate-progress {
+            animation: progress 2s ease-in-out infinite;
+          }
+        `}</style>
       </header>
   );
 };

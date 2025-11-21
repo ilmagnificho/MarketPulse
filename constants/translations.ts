@@ -1,4 +1,5 @@
 
+
 import { Language } from '../types';
 
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {
@@ -36,6 +37,12 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     translate_quote: "Translate",
     original_quote: "Original",
+
+    // History / Deja Vu
+    deja_vu_title: "MARKET DÉJÀ VU",
+    last_seen: "Last seen on",
+    since_then: "Since then",
+    days_ago: "days ago",
 
     // Crowd
     daily_poll: "Daily Sentiment Check",
@@ -94,6 +101,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     translate_quote: "번역 보기",
     original_quote: "원문 보기",
 
+    deja_vu_title: "마켓 데자뷰",
+    last_seen: "마지막 관측일",
+    since_then: "그 이후 변동률",
+    days_ago: "일 전",
+
     daily_poll: "일일 투심 체크",
     poll_question: "다음 마감 예측:",
     nyse_label: "NYSE (뉴욕증시)",
@@ -147,6 +159,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     translate_quote: "查看翻译",
     original_quote: "查看原文",
+
+    deja_vu_title: "市场既视感",
+    last_seen: "上次出现",
+    since_then: "此后变动",
+    days_ago: "天前",
 
     daily_poll: "每日情绪检查",
     poll_question: "收盘预测:",
@@ -202,6 +219,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     translate_quote: "翻訳を見る",
     original_quote: "原文を見る",
 
+    deja_vu_title: "市場のデジャヴ",
+    last_seen: "前回の観測",
+    since_then: "その後の変動",
+    days_ago: "日前",
+
     daily_poll: "日次センチメント",
     poll_question: "次回終値予測:",
     nyse_label: "NYSE",
@@ -255,6 +277,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     translate_quote: "Traducir",
     original_quote: "Original",
+
+    deja_vu_title: "DÉJÀ VU DE MERCADO",
+    last_seen: "Visto por última vez",
+    since_then: "Desde entonces",
+    days_ago: "días atrás",
 
     daily_poll: "Chequeo Diario",
     poll_question: "Predicción de cierre:",

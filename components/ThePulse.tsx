@@ -53,6 +53,38 @@ const SENTIMENT_CONFIGS: Record<string, SentimentConfig> = {
   },
 };
 
+const LoadingScreen: React.FC = () => {
+  const { t } = useLanguage();
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(prev => (prev < 99 ? prev + Math.floor(Math.random() * 5) + 1 : 0));
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section className="w-full h-[50vh] md:h-[60vh] rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)] overflow-hidden relative bg-black flex flex-col items-center justify-center border border-slate-800">
+       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+       <div className="flex flex-col items-center z-10 space-y-4">
+         {/* Scrambling Numbers Effect */}
+         <div className="text-6xl md:text-8xl font-black font-mono text-slate-800 animate-pulse flex">
+            <span className="text-cyan-500 opacity-50">{Math.min(count, 99).toString().padStart(2, '0')}</span>
+         </div>
+         <div className="flex flex-col items-center">
+            <div className="h-1 w-24 bg-slate-800 rounded overflow-hidden">
+               <div className="h-full bg-cyan-500 animate-progress"></div>
+            </div>
+            <span className="text-cyan-500 font-mono text-xs mt-2 tracking-widest uppercase animate-pulse">
+              {t('syncing')}
+            </span>
+         </div>
+       </div>
+    </section>
+  );
+};
+
 const ThePulse: React.FC = () => {
   const { t, language } = useLanguage();
   const [data, setData] = useState<FearGreedData | null>(null);
@@ -75,14 +107,7 @@ const ThePulse: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="w-full h-[40vh] rounded-2xl animate-pulse bg-slate-900 flex items-center justify-center shadow-2xl border border-slate-800 my-2">
-        <span className="text-cyan-500 font-mono text-sm flex flex-col items-center gap-2">
-           <span className="block w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></span>
-           {t('syncing')}
-        </span>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!data) return null;
@@ -139,6 +164,46 @@ const ThePulse: React.FC = () => {
         <div className={`w-full max-w-xl text-sm md:text-2xl font-bold p-3 md:p-6 rounded-xl bg-black/20 backdrop-blur-sm border border-white/5 shadow-inner text-slate-100 tracking-wide mt-4`}>
           {t(config.messageKey)}
         </div>
+
+        {/* HISTORY / DEJA VU SECTION (NEW) */}
+        {data.history && (
+           <div className="w-full max-w-xl mt-5 relative group animate-fade-in">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg blur-sm opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative bg-black/50 backdrop-blur-md border border-white/20 rounded-lg p-4 flex flex-col items-center md:flex-row md:justify-between gap-3 md:gap-4 shadow-lg">
+                
+                <div className="flex items-center gap-3">
+                   <span className="text-2xl">🕰️</span>
+                   <div className="text-left">
+                      <p className="text-[10px] md:text-xs font-mono text-purple-300 uppercase tracking-widest mb-0.5">{t('deja_vu_title')}</p>
+                      <p className="text-sm md:text-base text-slate-200 font-bold">
+                        {t('last_seen')} <span className="text-white">{new Date(data.history.lastSeenDate).toLocaleDateString(language === 'en' ? 'en-US' : language)}</span> 
+                        <span className="text-slate-400 font-normal text-xs ml-1">({data.history.daysAgo} {t('days_ago')})</span>
+                      </p>
+                   </div>
+                </div>
+
+                <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-white/20 pt-3 md:pt-0 md:pl-6 w-full md:w-auto justify-center md:justify-end">
+                    <div className="text-center">
+                       <p className="text-[10px] font-mono text-slate-400 mb-0.5">NASDAQ</p>
+                       <p className={`text-sm font-black ${data.history.nasdaqChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                         {data.history.nasdaqChange > 0 ? '+' : ''}{data.history.nasdaqChange}%
+                       </p>
+                    </div>
+                    <div className="text-center">
+                       <p className="text-[10px] font-mono text-slate-400 mb-0.5">NYSE</p>
+                       <p className={`text-sm font-black ${data.history.nyseChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                         {data.history.nyseChange > 0 ? '+' : ''}{data.history.nyseChange}%
+                       </p>
+                    </div>
+                </div>
+                
+                <div className="absolute -top-2 right-2 bg-black/80 text-[9px] text-slate-500 px-1 rounded font-mono">
+                  {t('since_then')}
+                </div>
+
+              </div>
+           </div>
+        )}
 
         {/* Quote Section - Compact */}
         <div className="w-full max-w-lg mt-3 pt-3 border-t border-white/10">
