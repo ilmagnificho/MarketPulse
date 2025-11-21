@@ -4,28 +4,16 @@ import { api } from '../services/mockSupabase';
 import { MarketPolls, SinglePollResult, Comment } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// --- Helpers ---
 const getNextTradingFriday = (locale: string) => {
   const d = new Date();
-  const day = d.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri
-  // Calculate days until next Friday (5)
-  // If today is Friday (5), we show *next* Friday? Or today?
-  // Assumption: If today is Friday after market close, show next Friday.
-  // For simplicity: Show current week's Friday if today <= Friday, else next week.
+  const day = d.getDay(); 
   const diff = 5 - day; 
-  
-  if (day > 5) { // Saturday
-     d.setDate(d.getDate() + 6); 
-  } else if (day === 0) { // Sunday
-     d.setDate(d.getDate() + 5);
-  } else {
-     d.setDate(d.getDate() + diff);
-  }
-  
+  if (day > 5) d.setDate(d.getDate() + 6); 
+  else if (day === 0) d.setDate(d.getDate() + 5);
+  else d.setDate(d.getDate() + diff);
   return d.toLocaleDateString(locale === 'en' ? 'en-US' : locale, { month: 'short', day: 'numeric' });
 };
 
-// --- Recursive Comment Component ---
 interface CommentItemProps {
   comment: Comment;
   depth?: number;
@@ -63,32 +51,31 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReply }
   };
 
   return (
-    <div className={`flex flex-col ${depth > 0 ? 'ml-4 pl-4 border-l-2 border-slate-700 mt-3' : 'mt-4'}`}>
-      <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-        <div className="flex justify-between items-baseline mb-1">
-          <span className="font-bold text-blue-400 text-sm">{comment.nickname}</span>
-          <span className="text-xs text-slate-500">{new Date(comment.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+    <div className={`flex flex-col ${depth > 0 ? 'ml-3 pl-3 border-l border-slate-700 mt-3' : 'mt-4'}`}>
+      <div className="bg-black/40 p-4 rounded-lg border border-slate-800 hover:border-slate-600 transition-colors">
+        <div className="flex justify-between items-baseline mb-2">
+          <span className="font-mono font-bold text-cyan-400 text-sm tracking-wide">{comment.nickname}</span>
+          <span className="text-[10px] font-mono text-slate-600">{new Date(comment.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
         </div>
-        <p className="text-slate-300 text-sm leading-snug mb-2">{comment.content}</p>
+        <p className="text-slate-300 text-sm leading-relaxed mb-3 font-medium">{comment.content}</p>
         
         <div className="flex items-center gap-4 text-xs font-bold text-slate-500 select-none">
-          <div className="flex items-center gap-1 bg-slate-800 rounded px-2 py-1">
-            <button onClick={() => handleVote('up')} className={`hover:text-orange-500 ${userVote === 'up' ? 'text-orange-500' : ''}`}>▲</button>
-            <span className={`min-w-[1rem] text-center ${userVote === 'up' ? 'text-orange-500' : userVote === 'down' ? 'text-blue-500' : 'text-slate-400'}`}>{voteScore}</span>
-            <button onClick={() => handleVote('down')} className={`hover:text-blue-500 ${userVote === 'down' ? 'text-blue-500' : ''}`}>▼</button>
+          <div className="flex items-center gap-1 bg-slate-900/80 rounded px-2 py-1 border border-slate-800">
+            <button onClick={() => handleVote('up')} className={`hover:text-orange-500 transition-colors ${userVote === 'up' ? 'text-orange-500' : ''}`}>▲</button>
+            <span className={`min-w-[1.5rem] text-center ${userVote === 'up' ? 'text-orange-500' : userVote === 'down' ? 'text-blue-500' : 'text-slate-400'}`}>{voteScore}</span>
+            <button onClick={() => handleVote('down')} className={`hover:text-blue-500 transition-colors ${userVote === 'down' ? 'text-blue-500' : ''}`}>▼</button>
           </div>
-          <button onClick={() => setIsReplying(!isReplying)} className="hover:text-slate-300 flex items-center gap-1">💬 {t('reply')}</button>
+          <button onClick={() => setIsReplying(!isReplying)} className="hover:text-cyan-400 flex items-center gap-1 transition-colors">💬 {t('reply')}</button>
         </div>
       </div>
 
       {isReplying && (
-        <form onSubmit={submitReply} className="mt-2 ml-2 p-3 bg-slate-800 rounded border border-slate-600">
+        <form onSubmit={submitReply} className="mt-2 ml-2 p-3 bg-slate-900/80 rounded border border-slate-700 animate-fade-in">
           <div className="space-y-2">
-             <input type="text" placeholder={t('nickname_placeholder')} className="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white" value={replyNick} onChange={(e) => setReplyNick(e.target.value)} />
+             <input type="text" placeholder={t('nickname_placeholder')} className="w-full bg-black border border-slate-700 rounded px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 outline-none" value={replyNick} onChange={(e) => setReplyNick(e.target.value)} />
             <div className="flex gap-2">
-              <input type="text" placeholder={t('comment_placeholder')} className="flex-1 bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} />
-              <button type="submit" className="bg-blue-600 px-3 rounded text-xs text-white font-bold">{t('post')}</button>
-              <button type="button" onClick={() => setIsReplying(false)} className="text-xs text-slate-400 underline">{t('cancel')}</button>
+              <input type="text" placeholder={t('comment_placeholder')} className="flex-1 bg-black border border-slate-700 rounded px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} />
+              <button type="submit" className="bg-cyan-700 hover:bg-cyan-600 px-3 rounded text-xs text-white font-bold uppercase tracking-wider">{t('post')}</button>
             </div>
           </div>
         </form>
@@ -102,7 +89,6 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReply }
   );
 };
 
-// --- Poll Component ---
 interface PollCardProps {
   label: string;
   marketKey: 'nyse' | 'nasdaq';
@@ -119,41 +105,47 @@ const PollCard: React.FC<PollCardProps> = ({ label, marketKey, data, hasVoted, o
   const bearPct = 100 - bullPct;
 
   return (
-    <div className="bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-700 flex flex-col h-full">
-       <div className="mb-4">
-          <h3 className="text-lg font-bold text-white flex items-center justify-between">
+    <div className="bg-slate-900 rounded-xl p-6 shadow-lg border border-slate-800 flex flex-col h-full relative overflow-hidden group">
+       <div className="absolute inset-0 bg-gradient-to-b from-slate-800/20 to-transparent pointer-events-none"></div>
+       
+       <div className="mb-6 relative z-10">
+          <h3 className="text-lg font-black text-slate-100 flex items-center justify-between tracking-tight uppercase">
             {t(label)}
-            <span className="text-xs font-normal text-slate-400 px-2 py-1 bg-slate-900 rounded border border-slate-700">
-               {t('poll_question')} <span className="text-indigo-400 font-bold">{dateStr}</span>
-            </span>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-mono text-slate-500 uppercase">{t('poll_question')}</span>
+              <span className="text-xs text-cyan-400 font-bold">{dateStr}</span>
+            </div>
           </h3>
        </div>
 
        {!hasVoted ? (
-         <div className="flex gap-3 flex-1 items-center">
-            <button onClick={() => onVote(marketKey, 'bull')} className="flex-1 h-20 rounded-xl bg-green-600/20 hover:bg-green-600 border border-green-600/50 hover:border-green-500 transition-all flex flex-col items-center justify-center group">
-              <span className="text-2xl group-hover:-translate-y-1 transition-transform">🚀</span>
-              <span className="font-bold text-green-100 text-sm">{t('bullish')}</span>
+         <div className="flex gap-4 flex-1 items-center relative z-10">
+            <button onClick={() => onVote(marketKey, 'bull')} className="flex-1 h-24 rounded-lg bg-gradient-to-br from-green-900/40 to-slate-900 hover:from-green-800/60 border border-green-800/30 hover:border-green-500 transition-all flex flex-col items-center justify-center group/btn">
+              <span className="text-3xl group-hover/btn:-translate-y-1 transition-transform duration-300">🐂</span>
+              <span className="font-black text-green-100 text-xs mt-2 tracking-widest">{t('bullish')}</span>
             </button>
-            <button onClick={() => onVote(marketKey, 'bear')} className="flex-1 h-20 rounded-xl bg-red-600/20 hover:bg-red-600 border border-red-600/50 hover:border-red-500 transition-all flex flex-col items-center justify-center group">
-              <span className="text-2xl group-hover:translate-y-1 transition-transform">🐻</span>
-              <span className="font-bold text-red-100 text-sm">{t('bearish')}</span>
+            <button onClick={() => onVote(marketKey, 'bear')} className="flex-1 h-24 rounded-lg bg-gradient-to-br from-red-900/40 to-slate-900 hover:from-red-800/60 border border-red-800/30 hover:border-red-500 transition-all flex flex-col items-center justify-center group/btn">
+              <span className="text-3xl group-hover/btn:translate-y-1 transition-transform duration-300">🐻</span>
+              <span className="font-black text-red-100 text-xs mt-2 tracking-widest">{t('bearish')}</span>
             </button>
          </div>
        ) : (
-         <div className="flex flex-col flex-1 justify-center space-y-4 animate-fade-in">
+         <div className="flex flex-col flex-1 justify-center space-y-4 animate-fade-in relative z-10">
             <div className="space-y-2">
-               <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                 <span className="text-green-400">{t('bulls')} {bullPct}%</span>
-                 <span className="text-red-400">{bearPct}% {t('bears')}</span>
+               <div className="flex justify-between text-xs font-black uppercase tracking-widest">
+                 <span className="text-green-400 drop-shadow-md">{bullPct}% {t('bulls')}</span>
+                 <span className="text-red-400 drop-shadow-md">{bearPct}% {t('bears')}</span>
                </div>
-               <div className="h-4 bg-slate-900 rounded-full overflow-hidden flex relative">
-                 <div className="bg-green-500 h-full transition-all duration-1000" style={{ width: `${bullPct}%` }}></div>
-                 <div className="bg-red-500 h-full transition-all duration-1000" style={{ width: `${bearPct}%` }}></div>
-                 {/* Center line */}
-                 <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-900/50"></div>
+               <div className="h-6 bg-black rounded-sm overflow-hidden flex relative border border-slate-700">
+                 <div className="bg-gradient-to-r from-green-700 to-green-500 h-full transition-all duration-1000 relative" style={{ width: `${bullPct}%` }}>
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                 </div>
+                 <div className="bg-gradient-to-l from-red-700 to-red-500 h-full transition-all duration-1000 relative" style={{ width: `${bearPct}%` }}>
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                 </div>
+                 <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-black z-10"></div>
                </div>
-               <p className="text-center text-xs text-slate-500">{data?.total} {t('votes')}</p>
+               <p className="text-center text-[10px] font-mono text-slate-500">{data?.total.toLocaleString()} {t('votes')}</p>
             </div>
          </div>
        )}
@@ -164,13 +156,11 @@ const PollCard: React.FC<PollCardProps> = ({ label, marketKey, data, hasVoted, o
 const TheCrowd: React.FC = () => {
   const { t } = useLanguage();
   const [polls, setPolls] = useState<MarketPolls | null>(null);
-  // Track votes separately for NYSE and NASDAQ
   const [userVotes, setUserVotes] = useState<{nyse: boolean, nasdaq: boolean}>({ nyse: false, nasdaq: false });
-  
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [nickname, setNickname] = useState('');
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -191,69 +181,54 @@ const TheCrowd: React.FC = () => {
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim() || !newComment.trim()) return;
-    setSubmittingComment(true);
+    setSubmitting(true);
     const posted = await api.postComment(nickname, newComment);
     setComments(prev => [posted, ...prev]);
     setNewComment('');
-    setSubmittingComment(false);
+    setSubmitting(false);
   };
 
   const handleReply = async (parentId: string, nick: string, content: string) => {
     const reply = await api.postComment(nick, content, parentId);
-    const insertReply = (list: Comment[]): Comment[] => {
-      return list.map(c => {
-        if (c.id === parentId) return { ...c, replies: [...c.replies, reply] };
-        else if (c.replies.length > 0) return { ...c, replies: insertReply(c.replies) };
-        return c;
-      });
-    };
+    const insertReply = (list: Comment[]): Comment[] => list.map(c => c.id === parentId ? { ...c, replies: [...c.replies, reply] } : { ...c, replies: insertReply(c.replies) });
     setComments(prev => insertReply(prev));
   };
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-8 w-full">
       
-      {/* SECTION B-1: Polls Split */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         <PollCard 
-            label="nyse_label" 
-            marketKey="nyse" 
-            data={polls?.nyse} 
-            hasVoted={userVotes.nyse} 
-            onVote={handleVote} 
-         />
-         <PollCard 
-            label="nasdaq_label" 
-            marketKey="nasdaq" 
-            data={polls?.nasdaq} 
-            hasVoted={userVotes.nasdaq} 
-            onVote={handleVote} 
-         />
+         <PollCard label="nyse_label" marketKey="nyse" data={polls?.nyse} hasVoted={userVotes.nyse} onVote={handleVote} />
+         <PollCard label="nasdaq_label" marketKey="nasdaq" data={polls?.nasdaq} hasVoted={userVotes.nasdaq} onVote={handleVote} />
       </div>
 
-      {/* SECTION B-2: Shared Live Discussion */}
-      <div className="bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-700 flex flex-col h-[600px]">
-        <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2 mb-4 shrink-0">
-          <span>💬</span> {t('the_pit')} <span className="text-xs font-normal text-green-400 bg-green-900/30 border border-green-700/50 px-2 py-1 rounded ml-auto flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> {t('live')}</span>
-        </h3>
+      <div className="bg-slate-900 rounded-2xl p-1 shadow-2xl border border-slate-800 flex flex-col h-[700px]">
+        <div className="bg-slate-950 p-4 rounded-t-xl border-b border-slate-800 flex items-center justify-between">
+             <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <span className="text-green-500 animate-pulse">●</span> {t('the_pit')}
+            </h3>
+            <span className="text-[10px] font-mono text-slate-600 border border-slate-800 px-2 py-1 rounded">ENCRYPTED CHANNEL</span>
+        </div>
         
-        <div className="flex-1 overflow-y-auto mb-4 pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-black/20">
           {comments.length === 0 ? (
-            <div className="text-center text-slate-600 py-12">{t('no_chatter')}</div>
+            <div className="flex h-full items-center justify-center text-slate-700 font-mono text-sm animate-pulse">{t('no_chatter')}</div>
           ) : (
             comments.map((c) => <CommentItem key={c.id} comment={c} onReply={handleReply} />)
           )}
         </div>
 
-        <form onSubmit={handlePostComment} className="space-y-2 border-t border-slate-700 pt-4 shrink-0">
-          <input type="text" placeholder={t('nickname_placeholder')} className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={12} />
-          <div className="flex gap-2">
-            <input type="text" placeholder={t('comment_placeholder')} className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" value={newComment} onChange={(e) => setNewComment(e.target.value)} />
-            <button disabled={submittingComment} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-bold transition-colors disabled:opacity-50">
-              {submittingComment ? '...' : t('post')}
-            </button>
-          </div>
-        </form>
+        <div className="p-4 bg-slate-950 border-t border-slate-800 rounded-b-xl">
+            <form onSubmit={handlePostComment} className="space-y-3">
+            <input type="text" placeholder={t('nickname_placeholder')} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition-colors" value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={15} />
+            <div className="flex gap-2">
+                <input type="text" placeholder={t('comment_placeholder')} className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" value={newComment} onChange={(e) => setNewComment(e.target.value)} />
+                <button disabled={submitting} className="bg-blue-700 hover:bg-blue-600 text-white px-6 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                {submitting ? '...' : t('post')}
+                </button>
+            </div>
+            </form>
+        </div>
       </div>
     </div>
   );

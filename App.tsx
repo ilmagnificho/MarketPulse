@@ -1,7 +1,7 @@
+
 import React from 'react';
 import ThePulse from './components/ThePulse';
 import TheCrowd from './components/TheCrowd';
-import TheOracle from './components/TheOracle';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { Language } from './types';
 
@@ -9,28 +9,28 @@ const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   
   return (
-    <header className="w-full py-6 px-4 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <header className="w-full py-3 px-4 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <h1 className="text-xl md:text-2xl font-black tracking-tight">
-              MARKET <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">PULSE</span>
+          <div className="flex items-center gap-2 md:gap-3 select-none">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]"></div>
+            <h1 className="text-lg md:text-2xl font-black tracking-tighter italic">
+              MARKET<span className="text-blue-500">PULSE</span>
             </h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <select 
               value={language} 
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded py-1 px-2 focus:outline-none focus:border-indigo-500"
+              className="bg-black border border-slate-700 text-slate-300 text-[10px] md:text-xs font-mono rounded py-1 px-1 md:px-2 focus:outline-none focus:border-blue-500 cursor-pointer uppercase"
             >
-              <option value="en">English</option>
-              <option value="ko">한국어</option>
-              <option value="zh">中文</option>
-              <option value="ja">日本語</option>
-              <option value="es">Español</option>
+              <option value="en">ENG</option>
+              <option value="ko">KOR</option>
+              <option value="zh">CHN</option>
+              <option value="ja">JPN</option>
+              <option value="es">ESP</option>
             </select>
-            <a href="#" className="text-sm font-semibold text-slate-400 hover:text-white transition-colors hidden sm:block">
+            <a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white transition-colors hidden sm:block uppercase tracking-wider">
               {t('about')}
             </a>
           </div>
@@ -42,40 +42,29 @@ const Header: React.FC = () => {
 const Footer: React.FC = () => {
   const { t } = useLanguage();
   return (
-    <footer className="mt-20 py-8 text-center text-slate-600 text-sm">
-      <p>© {new Date().getFullYear()} {t('footer')}</p>
-      <p className="mt-2 opacity-50">{t('data_provider')}</p>
+    <footer className="mt-10 py-8 text-center border-t border-slate-900 bg-black">
+      <p className="text-slate-600 text-[10px] font-mono mb-1">© {new Date().getFullYear()} {t('footer')}</p>
+      <p className="text-slate-800 text-[9px] uppercase tracking-widest">{t('data_provider')}</p>
     </footer>
   );
 };
 
 const AppContent: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-20">
+    <div className="min-h-screen bg-black text-slate-100 selection:bg-blue-500 selection:text-white flex flex-col font-sans">
       <Header />
 
-      {/* Main Content Container */}
-      <main className="max-w-4xl mx-auto px-4 pt-8 space-y-8">
+      {/* Main Content Container - Reduced padding for mobile */}
+      <main className="flex-1 max-w-4xl mx-auto w-full px-3 py-4 md:px-4 md:py-8 space-y-6 md:space-y-12">
         
         {/* A. The Pulse (Hero) */}
-        <section id="the-pulse">
+        <section id="the-pulse" className="animate-fade-in-down">
           <ThePulse />
         </section>
 
-        {/* Divider */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-
         {/* B. The Crowd (Community) */}
-        <section id="the-crowd">
+        <section id="the-crowd" className="animate-fade-in-up">
           <TheCrowd />
-        </section>
-
-        {/* Divider */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-
-        {/* C. The Oracle (Game) */}
-        <section id="the-oracle">
-          <TheOracle />
         </section>
 
       </main>

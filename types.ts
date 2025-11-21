@@ -15,6 +15,12 @@ export interface FearGreedData {
   timestamp: string;
 }
 
+export interface Quote {
+  text: string;
+  author: string;
+  title: string; // e.g. "Founder of Bridgewater"
+}
+
 export interface SinglePollResult {
   bullish: number;
   bearish: number;
@@ -36,18 +42,19 @@ export interface Comment {
   replies: Comment[];
 }
 
+export interface SentimentConfig {
+  level: SentimentLevel;
+  emoji: string;
+  bgColor: string; // Tailwind class for solid fallback
+  gradient: string; // Tailwind class for gradient
+  textColor: string; // Tailwind class
+  messageKey: string; 
+  range: [number, number];
+}
+
 export interface LeaderboardEntry {
   rank: number;
   nickname: string;
   prediction: number;
-  accuracy: string; // e.g., "99.8%"
-}
-
-export interface SentimentConfig {
-  level: SentimentLevel;
-  emoji: string;
-  bgColor: string; // Tailwind class
-  textColor: string; // Tailwind class
-  messageKey: string; // Translation key instead of hardcoded string
-  range: [number, number];
+  accuracy: string;
 }

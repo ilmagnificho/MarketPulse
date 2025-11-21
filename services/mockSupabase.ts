@@ -1,18 +1,27 @@
 
-import { FearGreedData, MarketPolls, Comment, LeaderboardEntry, SentimentLevel, SinglePollResult } from '../types';
+import { FearGreedData, MarketPolls, Comment, SentimentLevel, SinglePollResult, LeaderboardEntry } from '../types';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper to map numerical value to Level
+// Helper to map numerical value to Level (Fallback logic)
 const getLevelFromValue = (value: number): SentimentLevel => {
-  if (value <= 20) return SentimentLevel.ExtremeFear;
-  if (value <= 40) return SentimentLevel.Fear;
-  if (value <= 60) return SentimentLevel.Neutral;
-  if (value <= 80) return SentimentLevel.Greed;
+  if (value <= 25) return SentimentLevel.ExtremeFear;
+  if (value <= 45) return SentimentLevel.Fear;
+  if (value <= 55) return SentimentLevel.Neutral;
+  if (value <= 75) return SentimentLevel.Greed;
   return SentimentLevel.ExtremeGreed;
 };
 
-// In-memory state for polls to persist within session
+const parseSentimentLevel = (apiRating: string): SentimentLevel => {
+  // Normalize string to match Enum (Title Case)
+  const normalized = apiRating.toLowerCase();
+  if (normalized.includes('extreme fear')) return SentimentLevel.ExtremeFear;
+  if (normalized.includes('extreme greed')) return SentimentLevel.ExtremeGreed;
+  if (normalized.includes('fear')) return SentimentLevel.Fear;
+  if (normalized.includes('greed')) return SentimentLevel.Greed;
+  return SentimentLevel.Neutral;
+};
+
 let currentPolls: MarketPolls = {
   nyse: { bullish: 1250, bearish: 890, total: 2140 },
   nasdaq: { bullish: 1540, bearish: 1620, total: 3160 },
@@ -20,35 +29,56 @@ let currentPolls: MarketPolls = {
 
 export const api = {
   /**
-   * Fetches the REAL Fear & Greed Index.
-   * Note: CNN's API is CORS protected. We use Alternative.me (Open API)
-   * which mirrors general market sentiment very closely and allows CORS.
+   * Fetches the REAL CNN Fear & Greed Index.
+   * Mirrors logic from https://pypi.org/project/fear-and-greed/
+   * Endpoint: https://production.dataviz.cnn.io/index/fearandgreed/graphdata
    */
   getFearGreedIndex: async (): Promise<FearGreedData> => {
+    const targetUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+    let cnnData: any = null;
+
+    // Strategy 1: High-performance CORS Proxy (corsproxy.io)
+    // This mimics the direct Python request by stripping origin headers that trigger CORS blocks.
     try {
-      // Using alternative.me API which allows CORS for frontend-only apps
-      const response = await fetch('https://api.alternative.me/fng/');
-      const data = await response.json();
-      
-      if (data && data.data && data.data.length > 0) {
-        const value = parseInt(data.data[0].value, 10);
-        return {
-          value: value,
-          level: getLevelFromValue(value),
-          timestamp: new Date(parseInt(data.data[0].timestamp) * 1000).toISOString()
-        };
+      const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+      if (response.ok) {
+        cnnData = await response.json();
       }
-      throw new Error("Invalid data format");
     } catch (e) {
-      console.warn("API Fetch failed, falling back to mock for demo reliability", e);
-      // Fallback if API fails (or user is offline)
-      await delay(800);
+      console.warn("Strategy 1 (CorsProxy) failed, trying fallback...", e);
+    }
+
+    // Strategy 2: Fallback Proxy (allorigins.win)
+    if (!cnnData) {
+      try {
+        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+        if (response.ok) {
+          cnnData = await response.json();
+        }
+      } catch (e) {
+        console.warn("Strategy 2 (AllOrigins) failed.", e);
+      }
+    }
+
+    if (cnnData && cnnData.fear_and_greed && cnnData.fear_and_greed.score !== undefined) {
+      const score = cnnData.fear_and_greed.score;
+      const rating = cnnData.fear_and_greed.rating; // Use official rating string if available
+      const timestamp = cnnData.fear_and_greed.timestamp;
+
       return {
-        value: 6,
-        level: SentimentLevel.ExtremeFear,
-        timestamp: new Date().toISOString()
+        value: Math.round(score),
+        level: rating ? parseSentimentLevel(rating) : getLevelFromValue(score),
+        timestamp: timestamp || new Date().toISOString()
       };
     }
+
+    // Final Fallback if API is completely unreachable (prevents white screen)
+    console.error("All fetch strategies failed. Using simulation.");
+    return {
+      value: 45,
+      level: SentimentLevel.Neutral,
+      timestamp: new Date().toISOString()
+    };
   },
 
   getPollResults: async (): Promise<MarketPolls> => {
@@ -57,56 +87,36 @@ export const api = {
   },
 
   votePoll: async (market: 'nyse' | 'nasdaq', type: 'bull' | 'bear'): Promise<MarketPolls> => {
-    await delay(500);
+    await delay(300);
     const target = currentPolls[market];
-    
-    // Update in-memory state
     const newCount = {
       bullish: type === 'bull' ? target.bullish + 1 : target.bullish,
       bearish: type === 'bear' ? target.bearish + 1 : target.bearish,
       total: target.total + 1
     };
-    
-    currentPolls = {
-      ...currentPolls,
-      [market]: newCount
-    };
-
+    currentPolls = { ...currentPolls, [market]: newCount };
     return currentPolls;
   },
 
-  /**
-   * Get latest comments with nested structure support.
-   */
   getComments: async (): Promise<Comment[]> => {
     await delay(700);
     return [
       { 
         id: '1', 
-        nickname: 'MoonWalker', 
-        content: 'NASDAQ is oversold. Tech rally incoming this Friday.', 
+        nickname: 'ShortSqueeze', 
+        content: 'VIX is spiking. I am loading up on puts.', 
         timestamp: new Date(Date.now() - 1000 * 60 * 5),
         likes: 42,
         dislikes: 5,
-        replies: [
-             {
-                id: '1-1',
-                nickname: 'RationalInvestor',
-                content: 'Yields are still too high. Be careful.',
-                timestamp: new Date(Date.now() - 1000 * 60 * 2),
-                likes: 15,
-                dislikes: 1,
-                replies: []
-             }
-        ]
+        replies: []
       },
       { 
         id: '2', 
-        nickname: 'BearTrap', 
-        content: 'NYSE showing weakness. Rotations into defensive sectors.', 
+        nickname: 'DiamondHands', 
+        content: 'Just a correction. HODL.', 
         timestamp: new Date(Date.now() - 1000 * 60 * 15),
         likes: 8,
-        dislikes: 12,
+        dislikes: 22,
         replies: []
       },
     ];
@@ -127,21 +137,14 @@ export const api = {
 
   voteComment: async (commentId: string, type: 'like' | 'dislike'): Promise<void> => {
     await delay(200);
-    // In real app, would send to Supabase
     return;
   },
 
   getLeaderboard: async (): Promise<LeaderboardEntry[]> => {
-    await delay(600);
-    return [
-      { rank: 1, nickname: "AlphaSeeker", prediction: 4120.50, accuracy: "99.9%" },
-      { rank: 2, nickname: "ChartMaster", prediction: 4115.20, accuracy: "98.5%" },
-      { rank: 3, nickname: "LuckyGuess", prediction: 4135.00, accuracy: "97.2%" },
-    ];
+    return [];
   },
 
-  submitPrediction: async (nickname: string, value: number): Promise<boolean> => {
-    await delay(1000);
-    return true;
+  submitPrediction: async (nickname: string, prediction: number): Promise<void> => {
+    return;
   }
 };
