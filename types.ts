@@ -20,6 +20,7 @@ export interface FearGreedData {
   level: SentimentLevel;
   timestamp: string;
   pastMatches: HistoryEvent[];
+  catalysts: string[]; // New: Keywords driving the market
 }
 
 export interface QuoteDef {
@@ -48,6 +49,23 @@ export interface MarketTicker {
 export interface MarketTickers {
   nyse: MarketTicker;
   nasdaq: MarketTicker;
+  isOpen: boolean;
+  status: string; // 'OPEN', 'CLOSED'
+  reason?: string; // 'WEEKEND', 'HOLIDAY', 'AFTER_HOURS'
+}
+
+export interface SectorPerformance {
+  nameKey: string;
+  changePercent: number;
+  weight: number; // 1-3 sizing for heatmap
+}
+
+export interface LiveActivity {
+  id: string;
+  messageKey: string;
+  params?: Record<string, string>;
+  type: 'vote' | 'comment' | 'trade';
+  timestamp: number;
 }
 
 export interface Comment {

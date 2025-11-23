@@ -9,12 +9,15 @@ const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   
   return (
-    <header className="w-full py-4 px-4 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-50">
+    <header className="w-full py-3 px-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3 select-none">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]"></div>
-            <h1 className="text-xl md:text-2xl font-black tracking-tighter italic">
-              MARKET<span className="text-blue-500">PULSE</span>
+          <div className="flex items-center gap-2 select-none group">
+            <div className="relative">
+                <div className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_#f43f5e]"></div>
+                <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20"></div>
+            </div>
+            <h1 className="text-lg md:text-xl font-black tracking-tighter italic text-zinc-100">
+              MARKET<span className="text-emerald-500">PULSE</span>
             </h1>
           </div>
           
@@ -22,7 +25,7 @@ const Header: React.FC = () => {
             <select 
               value={language} 
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-black border border-slate-700 text-slate-300 text-xs font-mono rounded py-1.5 px-2 focus:outline-none focus:border-blue-500 cursor-pointer uppercase hover:border-slate-500 transition-colors"
+              className="bg-black border border-zinc-800 text-zinc-400 text-[10px] font-mono rounded py-1 px-2 focus:outline-none focus:border-emerald-500 cursor-pointer uppercase hover:border-zinc-600 transition-colors"
             >
               <option value="en">ENG</option>
               <option value="ko">KOR</option>
@@ -39,20 +42,24 @@ const Header: React.FC = () => {
 const Footer: React.FC = () => {
   const { t } = useLanguage();
   return (
-    <footer className="mt-12 py-8 text-center border-t border-slate-900 bg-black">
-      <p className="text-slate-600 text-xs font-mono mb-1">© {new Date().getFullYear()} {t('footer')}</p>
-      <p className="text-slate-800 text-[10px] uppercase tracking-widest">{t('data_provider')}</p>
+    <footer className="mt-12 py-8 text-center border-t border-zinc-900 bg-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,18,18,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
+      <p className="text-zinc-600 text-[10px] font-mono mb-1 relative z-10">© {new Date().getFullYear()} {t('footer')}</p>
+      <p className="text-zinc-800 text-[10px] uppercase tracking-widest relative z-10">{t('data_provider')}</p>
     </footer>
   );
 };
 
 const AppContent: React.FC = () => {
   return (
-    <div className="min-h-screen bg-black text-slate-100 selection:bg-blue-500 selection:text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-black text-zinc-100 selection:bg-emerald-500 selection:text-white flex flex-col font-sans overflow-x-hidden relative">
+      {/* CRT Scanline Effect Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[linear-gradient(rgba(18,18,18,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]"></div>
+      
       <Header />
 
       {/* Main Content Container */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 md:py-10 space-y-8 md:space-y-12">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 md:py-8 space-y-8 relative z-10">
         
         {/* A. The Pulse (Hero) */}
         <section id="the-pulse" className="animate-fade-in-down">

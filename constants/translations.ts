@@ -10,7 +10,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_greed: "Buying pressure is high. Momentum is strong but risk/reward is worsening.",
     pulse_extreme_greed: "Extreme euphoria. Markets are stretched and vulnerable to a correction.",
     last_updated: "UPDATED",
-    syncing: "ANALYZING MARKET DATA...",
+    syncing: "DECODING SIGNAL...",
     
     zone_extreme_fear: "HEAVY DISCOUNT ZONE",
     zone_fear: "ACCUMULATION ZONE",
@@ -107,7 +107,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     translate_quote: "TRANSLATE",
     original_quote: "ORIGINAL",
 
-    // History / Patterns
     pattern_title: "PATTERN RECOGNITION",
     pattern_desc: "Previous dates with similar sentiment:",
     col_date: "DATE",
@@ -130,6 +129,24 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     comment_placeholder: "Share your analysis...",
     post: "POST",
     reply: "REPLY",
+
+    // Sectors & Activity
+    sector_heatmap: "SECTOR HEATMAP",
+    sector_tech: "TECH",
+    sector_finance: "FINANCE",
+    sector_energy: "ENERGY",
+    sector_healthcare: "HEALTH",
+    sector_crypto: "CRYPTO",
+    sector_consumer: "CONSUMER",
+    activity_voted: "{market} VOTE {type}",
+    activity_commented: "{user} POSTED INTEL",
+    catalysts_title: "MARKET CATALYSTS",
+
+    status_open: "LIVE",
+    status_closed: "CLOSED",
+    reason_weekend: "WEEKEND",
+    reason_holiday: "HOLIDAY",
+    reason_after_hours: "AFTER HOURS",
     
     footer: "Market Pulse. Not financial advice.",
     data_provider: "Data: CNN Business"
@@ -141,7 +158,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_greed: "매수세가 강합니다. 모멘텀은 좋지만 손익비는 점차 나빠지고 있습니다.",
     pulse_extreme_greed: "극도의 과열 상태입니다. 시장이 무리하게 뻗어있어 조정 위험이 큽니다.",
     last_updated: "업데이트 완료",
-    syncing: "시장 데이터 분석 중...",
+    syncing: "시그널 분석 중...",
     
     zone_extreme_fear: "과매도 / 바겐세일 구간",
     zone_fear: "분할 매수(Accumulation) 구간",
@@ -233,7 +250,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     translate_quote: "번역",
     original_quote: "원문",
 
-    // History
     pattern_title: "과거 패턴 분석",
     pattern_desc: "동일 수치가 발생했던 과거 시점:",
     col_date: "날짜",
@@ -255,6 +271,23 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     comment_placeholder: "관점 공유...",
     post: "등록",
     reply: "답글",
+
+    sector_heatmap: "섹터별 흐름",
+    sector_tech: "기술주",
+    sector_finance: "금융주",
+    sector_energy: "에너지",
+    sector_healthcare: "헬스케어",
+    sector_crypto: "크립토",
+    sector_consumer: "소비재",
+    activity_voted: "{market} {type} 투표",
+    activity_commented: "{user} 메시지 등록",
+    catalysts_title: "시장 핵심 키워드",
+
+    status_open: "실시간",
+    status_closed: "휴장",
+    reason_weekend: "주말",
+    reason_holiday: "공휴일",
+    reason_after_hours: "장마감",
     
     footer: "Market Pulse. 투자 조언이 아닙니다.",
     data_provider: "데이터: CNN Business"
@@ -266,7 +299,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_greed: "买盘强劲。动能虽强，但盈亏比正在恶化。",
     pulse_extreme_greed: "极度狂热。市场过度延伸，回调风险极大。",
     last_updated: "已更新",
-    syncing: "分析市场数据...",
+    syncing: "解码信号...",
     
     zone_extreme_fear: "超卖 / 特价区",
     zone_fear: "吸筹区",
@@ -379,6 +412,23 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     comment_placeholder: "分享观点...",
     post: "发布",
     reply: "回复",
+
+    sector_heatmap: "板块热力图",
+    sector_tech: "科技",
+    sector_finance: "金融",
+    sector_energy: "能源",
+    sector_healthcare: "医疗",
+    sector_crypto: "加密",
+    sector_consumer: "消费",
+    activity_voted: "{market} 投票 {type}",
+    activity_commented: "{user} 发布了情报",
+    catalysts_title: "市场催化剂",
+
+    status_open: "实时",
+    status_closed: "休市",
+    reason_weekend: "周末",
+    reason_holiday: "假期",
+    reason_after_hours: "盘后",
     
     footer: "Market Pulse. 非投资建议。",
     data_provider: "数据: CNN Business"
@@ -390,7 +440,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_greed: "買い圧力が強いです。勢いはありますがリスクリワードは悪化しています。",
     pulse_extreme_greed: "極度の陶酔。市場は過熱しており、調整リスクが高いです。",
     last_updated: "更新完了",
-    syncing: "データ分析中...",
+    syncing: "信号解読中...",
     
     zone_extreme_fear: "売られすぎ / バーゲン",
     zone_fear: "蓄積 (Accumulation) ゾーン",
@@ -496,13 +546,30 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     bearish: "弱気 (SHORT)",
     bulls: "強気",
     bears: "弱気",
-    votes: "投票数",
+    votes: "票",
     the_pit: "トレーディングフロア",
     no_chatter: "シグナルなし。",
     nickname_placeholder: "コードネーム",
     comment_placeholder: "分析を共有...",
     post: "投稿",
     reply: "返信",
+
+    sector_heatmap: "セクターヒートマップ",
+    sector_tech: "ハイテク",
+    sector_finance: "金融",
+    sector_energy: "エネルギー",
+    sector_healthcare: "ヘルスケア",
+    sector_crypto: "クリプト",
+    sector_consumer: "消費財",
+    activity_voted: "{market} {type} 投票",
+    activity_commented: "{user} 情報提供",
+    catalysts_title: "市場カタリスト",
+
+    status_open: "LIVE",
+    status_closed: "休場",
+    reason_weekend: "週末",
+    reason_holiday: "祝日",
+    reason_after_hours: "時間外",
     
     footer: "Market Pulse. 投資助言ではありません。",
     data_provider: "データ: CNN Business"
@@ -514,7 +581,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_greed: "Fuerte presión de compra. Momentum fuerte pero riesgo alto.",
     pulse_extreme_greed: "Euforia extrema. Mercado extendido y vulnerable.",
     last_updated: "ACTUALIZADO",
-    syncing: "ANALIZANDO DATOS...",
+    syncing: "DECODIFICANDO SEÑAL...",
     
     zone_extreme_fear: "ZONA DE DESCUENTO",
     zone_fear: "ZONA DE ACUMULACIÓN",
@@ -627,6 +694,23 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     comment_placeholder: "Compartir análisis...",
     post: "PUBLICAR",
     reply: "RESPONDER",
+
+    sector_heatmap: "MAPA DE CALOR",
+    sector_tech: "TECNO",
+    sector_finance: "FINANZAS",
+    sector_energy: "ENERGÍA",
+    sector_healthcare: "SALUD",
+    sector_crypto: "CRYPTO",
+    sector_consumer: "CONSUMO",
+    activity_voted: "{market} VOTO {type}",
+    activity_commented: "{user} COMPARTIÓ INTEL",
+    catalysts_title: "CATALIZADORES DE MERCADO",
+
+    status_open: "EN VIVO",
+    status_closed: "CERRADO",
+    reason_weekend: "FIN DE SEMANA",
+    reason_holiday: "FERIADO",
+    reason_after_hours: "POST-CIERRE",
     
     footer: "Market Pulse. No es consejo financiero.",
     data_provider: "Datos: CNN Business"
