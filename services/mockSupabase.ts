@@ -1,12 +1,9 @@
-
-import { FearGreedData, MarketPolls, Comment, SentimentLevel, LeaderboardEntry, HistoryContext } from '../types';
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { FearGreedData, MarketPolls, Comment, SentimentLevel, LeaderboardEntry, HistoryEvent } from '../types';
 
 // --- LOCAL STORAGE KEYS ---
 const STORAGE_KEYS = {
-  POLLS: 'MARKET_PULSE_POLLS_V1',
-  COMMENTS: 'MARKET_PULSE_COMMENTS_V1'
+  POLLS: 'MARKET_PULSE_POLLS_V2',
+  COMMENTS: 'MARKET_PULSE_COMMENTS_V2'
 };
 
 // --- INITIAL DATA ---
@@ -36,6 +33,27 @@ const INITIAL_COMMENTS: Comment[] = [
   },
 ];
 
+// --- REAL-TIME & SIMULATION STATE ---
+type SubscriptionCallback<T> = (data: T) => void;
+const pollSubscribers: Set<SubscriptionCallback<MarketPolls>> = new Set();
+const commentSubscribers: Set<SubscriptionCallback<Comment[]>> = new Set();
+
+const channel = new BroadcastChannel('market_pulse_realtime');
+
+const BOT_NICKS = ['MarketWizard', 'CoinFlipper', 'QuantAlgo', 'HODLer', 'BearWhale', 'JPOW_Fan', 'DeltaOne', 'Satoshi_Ghost'];
+const BOT_MESSAGES = [
+    "Liquidity looks thin here.",
+    "Buying the dip.",
+    "Short squeeze incoming?",
+    "Just hit my stop loss.",
+    "Rotation into tech is obvious.",
+    "VIX is waking up.",
+    "Looking for a rejection at this level.",
+    "Gap fill likely.",
+    "Volume is drying up.",
+    "Algo trading taking over."
+];
+
 // --- HELPERS ---
 const getLevelFromValue = (value: number): SentimentLevel => {
   if (value <= 25) return SentimentLevel.ExtremeFear;
@@ -54,44 +72,74 @@ const parseSentimentLevel = (apiRating: string): SentimentLevel => {
   return SentimentLevel.Neutral;
 };
 
-const generateTrendData = (days: number, volatility: number): number[] => {
-    const points = 20;
-    const data = [0];
-    let current = 0;
-    for (let i = 0; i < points; i++) {
-        const change = (Math.random() - 0.45) * volatility; // slight upward bias
-        current += change;
-        data.push(current);
+// Find top 3-5 past dates with similar scores
+const findHistoricalMatches = (currentScore: number, historyData: any[]): HistoryEvent[] => {
+    const matches: HistoryEvent[] = [];
+    const targetCount = 4; 
+    
+    if (!Array.isArray(historyData)) return generateFallbackMatches(currentScore);
+
+    // Iterate backwards to find recent matches first, skipping very recent days (last 7 days) to avoid redundancy
+    const now = new Date().getTime();
+    const ONE_DAY = 1000 * 60 * 60 * 24;
+    
+    for (let i = historyData.length - 7; i >= 0; i--) {
+        const item = historyData[i];
+        if (!item || item.y === undefined) continue;
+        
+        const itemScore = Math.round(item.y);
+        // Match within +/- 2 points
+        if (Math.abs(itemScore - currentScore) <= 2) {
+            const date = new Date(item.x);
+            
+            // Avoid duplicate nearby dates (e.g., yesterday and today)
+            const isTooClose = matches.some(m => Math.abs(new Date(m.date).getTime() - date.getTime()) < (ONE_DAY * 14));
+            if (!isTooClose) {
+                // Simulate "what happened next" (1 Month Return) based on score
+                // Extreme Fear usually leads to bounce (+), Extreme Greed to correction (-)
+                // Adding some randomness to simulation
+                let baseReturn = 0;
+                if (currentScore < 30) baseReturn = 4.5; // Bounce
+                else if (currentScore > 70) baseReturn = -3.2; // Correction
+                else baseReturn = 1.2; // Drift
+
+                const randomVar = (Math.random() * 6) - 3; // +/- 3% variance
+                const simulatedReturn = parseFloat((baseReturn + randomVar).toFixed(2));
+
+                matches.push({
+                    date: date.toISOString(),
+                    score: itemScore,
+                    subsequentReturn: simulatedReturn
+                });
+            }
+        }
+        if (matches.length >= targetCount) break;
     }
-    return data;
+
+    if (matches.length === 0) return generateFallbackMatches(currentScore);
+    return matches;
 };
 
-const generateFallbackHistory = (currentScore: number): HistoryContext => {
-  let minDays = 7;
-  let maxDays = 30;
-  
-  if (currentScore < 25 || currentScore > 75) {
-    minDays = 45;
-    maxDays = 180;
-  } else if (currentScore < 45 || currentScore > 55) {
-    minDays = 14;
-    maxDays = 60;
-  }
+const generateFallbackMatches = (score: number): HistoryEvent[] => {
+    const matches: HistoryEvent[] = [];
+    const count = 3;
+    for (let i = 1; i <= count; i++) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - (i * 4)); // Go back 4, 8, 12 months
+        d.setDate(d.getDate() + Math.floor(Math.random() * 10));
+        
+        let ret = 0;
+        if (score < 30) ret = 5 + Math.random() * 5;
+        else if (score > 70) ret = -4 - Math.random() * 4;
+        else ret = (Math.random() * 6) - 3;
 
-  const daysAgo = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
-  const pastDate = new Date();
-  pastDate.setDate(pastDate.getDate() - daysAgo);
-
-  const volatility = Math.sqrt(daysAgo) * 0.6;
-  const trend = Math.random() > 0.4 ? 1 : -1; 
-
-  return {
-    lastSeenDate: pastDate.toISOString(),
-    daysAgo: daysAgo,
-    nasdaqChange: parseFloat((Math.random() * volatility * trend).toFixed(2)),
-    nyseChange: parseFloat((Math.random() * (volatility * 0.7) * trend).toFixed(2)),
-    trend: generateTrendData(daysAgo, volatility)
-  };
+        matches.push({
+            date: d.toISOString(),
+            score: score + Math.floor(Math.random() * 4) - 2,
+            subsequentReturn: parseFloat(ret.toFixed(2))
+        });
+    }
+    return matches;
 };
 
 // --- LOCAL STORAGE MANAGERS ---
@@ -123,6 +171,64 @@ const saveComments = (comments: Comment[]) => {
     try {
         localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(comments));
     } catch (e) {}
+};
+
+// --- REAL-TIME SUBSCRIPTIONS ---
+const notifyPolls = (data: MarketPolls, broadcast = true) => {
+    pollSubscribers.forEach(cb => cb(data));
+    if (broadcast) channel.postMessage({ type: 'POLLS_UPDATE', data });
+};
+
+const notifyComments = (data: Comment[], broadcast = true) => {
+    commentSubscribers.forEach(cb => cb(data));
+    if (broadcast) channel.postMessage({ type: 'COMMENTS_UPDATE', data });
+};
+
+channel.onmessage = (event) => {
+    if (event.data.type === 'POLLS_UPDATE') {
+        savePolls(event.data.data);
+        notifyPolls(event.data.data, false);
+    } else if (event.data.type === 'COMMENTS_UPDATE') {
+        saveComments(event.data.data);
+        notifyComments(event.data.data, false);
+    }
+};
+
+let simulationRunning = false;
+const startSimulation = () => {
+    if (simulationRunning) return;
+    simulationRunning = true;
+
+    setInterval(() => {
+        if (Math.random() > 0.3) {
+            const market = Math.random() > 0.5 ? 'nyse' : 'nasdaq';
+            const type = Math.random() > 0.5 ? 'bull' : 'bear';
+            const current = loadPolls();
+            const target = current[market];
+            target[type === 'bull' ? 'bullish' : 'bearish']++;
+            target.total++;
+            savePolls(current);
+            notifyPolls(current);
+        }
+    }, 4000);
+
+    setInterval(() => {
+        if (Math.random() > 0.5) {
+            const current = loadComments();
+            const newMsg: Comment = {
+                id: Math.random().toString(36).substr(2, 9),
+                nickname: BOT_NICKS[Math.floor(Math.random() * BOT_NICKS.length)],
+                content: BOT_MESSAGES[Math.floor(Math.random() * BOT_MESSAGES.length)],
+                timestamp: new Date().toISOString(),
+                likes: Math.floor(Math.random() * 5),
+                dislikes: 0,
+                replies: []
+            };
+            const updated = [newMsg, ...current].slice(0, 50);
+            saveComments(updated);
+            notifyComments(updated);
+        }
+    }, 15000);
 };
 
 export const api = {
@@ -162,42 +268,14 @@ export const api = {
       const rating = cnnData.fear_and_greed.rating; 
       const dataTimestamp = cnnData.fear_and_greed.timestamp;
       
-      let historyContext: HistoryContext | undefined = undefined;
       const historyData = cnnData.fear_and_greed.historical?.data;
-
-      if (Array.isArray(historyData) && historyData.length > 5) {
-        for (let i = historyData.length - 10; i >= 0; i--) {
-          const pastItem = historyData[i];
-          if (Math.abs(Math.round(pastItem.y) - score) <= 1) {
-             const pastDate = new Date(pastItem.x);
-             const daysAgo = Math.floor((new Date().getTime() - pastDate.getTime()) / (1000 * 60 * 60 * 24));
-             
-             if (daysAgo > 7) {
-               const direction = Math.random() > 0.4 ? 1 : -1;
-               const volatility = Math.sqrt(daysAgo) * 0.5;
-               
-               historyContext = {
-                 lastSeenDate: pastDate.toISOString(),
-                 daysAgo: daysAgo,
-                 nasdaqChange: parseFloat((Math.random() * volatility * direction).toFixed(2)),
-                 nyseChange: parseFloat((Math.random() * (volatility * 0.7) * direction).toFixed(2)),
-                 trend: generateTrendData(daysAgo, volatility)
-               };
-               break;
-             }
-          }
-        }
-      }
-
-      if (!historyContext) {
-        historyContext = generateFallbackHistory(score);
-      }
+      const pastMatches = findHistoricalMatches(score, historyData);
 
       return {
         value: score,
         level: rating ? parseSentimentLevel(rating) : getLevelFromValue(score),
         timestamp: dataTimestamp || new Date().toISOString(),
-        history: historyContext
+        pastMatches: pastMatches
       };
     }
 
@@ -206,17 +284,25 @@ export const api = {
       value: fallbackScore,
       level: getLevelFromValue(fallbackScore),
       timestamp: new Date().toISOString(),
-      history: generateFallbackHistory(fallbackScore)
+      pastMatches: generateFallbackMatches(fallbackScore)
     };
   },
 
-  getPollResults: async (): Promise<MarketPolls> => {
-    await delay(200); // Slight delay for realism
-    return loadPolls();
+  subscribeToPolls: (cb: SubscriptionCallback<MarketPolls>) => {
+      pollSubscribers.add(cb);
+      cb(loadPolls());
+      startSimulation();
+      return () => pollSubscribers.delete(cb);
+  },
+
+  subscribeToComments: (cb: SubscriptionCallback<Comment[]>) => {
+      commentSubscribers.add(cb);
+      cb(loadComments());
+      startSimulation();
+      return () => commentSubscribers.delete(cb);
   },
 
   votePoll: async (market: 'nyse' | 'nasdaq', type: 'bull' | 'bear'): Promise<MarketPolls> => {
-    await delay(300);
     const current = loadPolls();
     const target = current[market];
     const newCount = {
@@ -226,18 +312,12 @@ export const api = {
     };
     const updated = { ...current, [market]: newCount };
     savePolls(updated);
+    notifyPolls(updated);
     return updated;
   },
 
-  getComments: async (): Promise<Comment[]> => {
-    await delay(200);
-    return loadComments();
-  },
-
   postComment: async (nickname: string, content: string, parentId?: string): Promise<Comment> => {
-    await delay(400);
     const allComments = loadComments();
-    
     const newC: Comment = {
       id: Math.random().toString(36).substr(2, 9),
       nickname,
@@ -248,9 +328,9 @@ export const api = {
       replies: []
     };
 
+    let updatedComments: Comment[];
     if (!parentId) {
-        saveComments([newC, ...allComments]);
-        return newC;
+        updatedComments = [newC, ...allComments];
     } else {
         const addReply = (list: Comment[]): Comment[] => {
             return list.map(c => {
@@ -260,14 +340,14 @@ export const api = {
                 return { ...c, replies: addReply(c.replies) };
             });
         };
-        saveComments(addReply(allComments));
-        return newC;
+        updatedComments = addReply(allComments);
     }
+    saveComments(updatedComments);
+    notifyComments(updatedComments);
+    return newC;
   },
 
   voteComment: async (commentId: string, type: 'like' | 'dislike'): Promise<void> => {
-    // This is a "fire and forget" in this mock implementation,
-    // but we should update local storage for realism.
     const allComments = loadComments();
     const updateVotes = (list: Comment[]): Comment[] => {
         return list.map(c => {
@@ -281,14 +361,11 @@ export const api = {
             return { ...c, replies: updateVotes(c.replies) };
         });
     };
-    saveComments(updateVotes(allComments));
+    const updated = updateVotes(allComments);
+    saveComments(updated);
+    notifyComments(updated);
   },
-
-  getLeaderboard: async (): Promise<LeaderboardEntry[]> => {
-    return [];
-  },
-
-  submitPrediction: async (nickname: string, prediction: number): Promise<void> => {
-    return;
-  }
+  
+  getLeaderboard: async (): Promise<LeaderboardEntry[]> => [],
+  submitPrediction: async (nickname: string, prediction: number): Promise<void> => {}
 };

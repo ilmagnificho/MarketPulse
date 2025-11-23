@@ -22,20 +22,20 @@ interface CommentItemProps {
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReply }) => {
   const { t } = useLanguage();
-  const [voteScore, setVoteScore] = useState(comment.likes - comment.dislikes);
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [replyNick, setReplyNick] = useState('');
   const [replyContent, setReplyContent] = useState('');
 
+  // We derive score directly from props for real-time accuracy
+  const voteScore = comment.likes - comment.dislikes;
+
   const handleVote = (type: 'up' | 'down') => {
+    // If already voted same type, toggle off (not fully implemented in mock backend, but UI allows it)
     if (userVote === type) {
       setUserVote(null);
-      setVoteScore(comment.likes - comment.dislikes);
+      // Ideally we'd decrement vote in backend too
     } else {
-      const diff = type === 'up' ? 1 : -1;
-      const correction = userVote ? (userVote === 'up' ? -1 : 1) : 0;
-      setVoteScore(comment.likes - comment.dislikes + diff + correction);
       setUserVote(type);
       api.voteComment(comment.id, type === 'up' ? 'like' : 'dislike');
     }
@@ -59,7 +59,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReply }
               <span className="text-[10px] text-zinc-600">{new Date(comment.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
           </div>
         </div>
-        <p className="text-zinc-400 text-sm leading-relaxed mb-2">{comment.content}</p>
+        <p className="text-zinc-400 text-sm leading-relaxed mb-2 break-words">{comment.content}</p>
         
         <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-600 select-none">
           <div className="flex items-center gap-1">
@@ -167,41 +167,43 @@ const TheCrowd: React.FC = () => {
   const [nickname, setNickname] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // REAL-TIME SUBSCRIPTION
   useEffect(() => {
-    const init = async () => {
-      const [pResult, cResult] = await Promise.all([api.getPollResults(), api.getComments()]);
-      setPolls(pResult);
-      setComments(cResult);
-      
-      // Check local storage for vote status (mock logic usually handles this in backend, 
-      // but for UI state we'll check simplistic flag if we had one, 
-      // for now we just reset vote status on refresh to allow testing interaction)
+    // Subscribe to polls
+    const unsubPolls = api.subscribeToPolls((data) => {
+        setPolls(data);
+    });
+
+    // Subscribe to comments
+    const unsubComments = api.subscribeToComments((data) => {
+        setComments(data);
+    });
+
+    return () => {
+        unsubPolls();
+        unsubComments();
     };
-    init();
   }, []);
 
   const handleVote = async (market: 'nyse' | 'nasdaq', type: 'bull' | 'bear') => {
     if (userVotes[market]) return;
     setUserVotes(prev => ({ ...prev, [market]: true }));
-    const newResults = await api.votePoll(market, type);
-    setPolls(newResults);
+    // API will update local store and trigger subscription callback, updating state
+    await api.votePoll(market, type);
   };
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim() || !newComment.trim()) return;
     setSubmitting(true);
-    const posted = await api.postComment(nickname, newComment);
-    setComments(prev => [posted, ...prev]);
+    await api.postComment(nickname, newComment);
+    // No need to manually setComments, subscription handles it
     setNewComment('');
     setSubmitting(false);
   };
 
   const handleReply = async (parentId: string, nick: string, content: string) => {
-    const reply = await api.postComment(nick, content, parentId);
-    // Recursive helper to update tree
-    const insertReply = (list: Comment[]): Comment[] => list.map(c => c.id === parentId ? { ...c, replies: [...c.replies, reply] } : { ...c, replies: insertReply(c.replies) });
-    setComments(prev => insertReply(prev));
+    await api.postComment(nick, content, parentId);
   };
 
   return (

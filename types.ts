@@ -9,19 +9,17 @@ export enum SentimentLevel {
 
 export type Language = 'en' | 'ko' | 'zh' | 'ja' | 'es';
 
-export interface HistoryContext {
-  lastSeenDate: string;
-  daysAgo: number;
-  nasdaqChange: number;
-  nyseChange: number;
-  trend: number[]; // Array for mini-chart
+export interface HistoryEvent {
+  date: string;
+  score: number;
+  subsequentReturn: number; // The market return 1 month after this event
 }
 
 export interface FearGreedData {
   value: number;
   level: SentimentLevel;
   timestamp: string;
-  history?: HistoryContext;
+  pastMatches: HistoryEvent[];
 }
 
 export interface QuoteDef {
@@ -45,7 +43,7 @@ export interface Comment {
   id: string;
   nickname: string;
   content: string;
-  timestamp: string; // Changed to string for JSON serialization
+  timestamp: string;
   likes: number;
   dislikes: number;
   replies: Comment[];
@@ -53,11 +51,12 @@ export interface Comment {
 
 export interface SentimentConfig {
   level: SentimentLevel;
-  iconPath: string; // SVG Path data instead of emoji
-  color: string; // Main color hex or tailwind class base
+  iconPath: string;
+  color: string;
   gradient: string; 
   messageKey: string; 
   range: [number, number];
+  zoneLabelKey: string; // New: "Oversold", "Accumulation", etc.
 }
 
 export interface LeaderboardEntry {
