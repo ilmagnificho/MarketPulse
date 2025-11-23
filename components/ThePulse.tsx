@@ -208,7 +208,7 @@ const ThePulse: React.FC = () => {
             <div className="w-full max-w-2xl mt-10 bg-zinc-900/20 border border-zinc-800/60 rounded-lg overflow-hidden backdrop-blur-sm">
                 <div className="p-3 border-b border-zinc-800/60 bg-zinc-900/40 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('pattern_title')}</span>
-                    <span className="text-[10px] text-zinc-600 font-mono">SIMILARITY > 90%</span>
+                    <span className="text-[10px] text-zinc-600 font-mono">SIMILARITY {'>'} 90%</span>
                 </div>
                 
                 <table className="w-full text-left border-collapse">

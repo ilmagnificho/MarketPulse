@@ -401,6 +401,21 @@ const startSimulation = () => {
     }, 10000);
 };
 
+// Helper to safely race promises
+const raceSuccess = <T>(promises: Promise<T>[]): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    let failureCount = 0;
+    promises.forEach((p) => {
+      p.then(resolve).catch(() => {
+        failureCount++;
+        if (failureCount === promises.length) {
+          reject(new Error("All fetch attempts failed"));
+        }
+      });
+    });
+  });
+};
+
 export const api = {
   getFearGreedIndex: async (): Promise<FearGreedData> => {
     const targetUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
@@ -423,7 +438,7 @@ export const api = {
 
     let cnnData: any = null;
     try {
-      cnnData = await (Promise as any).any([
+      cnnData = await raceSuccess([
         fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}${cacheBuster}`, 6000),
         fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}${cacheBuster}`, 6000),
         fetchWithTimeout(`${targetUrl}?${cacheBuster}`, 2000)
