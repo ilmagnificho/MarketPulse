@@ -39,6 +39,17 @@ export interface MarketPolls {
   nasdaq: SinglePollResult;
 }
 
+export interface MarketTicker {
+  price: number;
+  change: number;
+  changePercent: number;
+}
+
+export interface MarketTickers {
+  nyse: MarketTicker;
+  nasdaq: MarketTicker;
+}
+
 export interface Comment {
   id: string;
   nickname: string;

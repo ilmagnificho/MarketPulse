@@ -54,16 +54,11 @@ const SENTIMENT_CONFIGS: Record<string, SentimentConfig> = {
 };
 
 const SegmentedGauge: React.FC<{ value: number, color: string }> = ({ value, color }) => {
-    // Calculate stroke-dasharray for a segmented look
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
-    // We want a 240 degree gauge (not full circle)
-    // 240/360 = 0.666
     const gaugeSize = circumference * 0.75; // 270 deg
     const offset = circumference - ((value / 100) * gaugeSize);
     
-    const rotationOffset = 135; // Start from bottom left
-
     return (
         <div className="relative w-64 h-64 flex items-center justify-center">
              <svg className="w-full h-full transform rotate-[135deg]" viewBox="0 0 100 100">
@@ -117,7 +112,8 @@ const ThePulse: React.FC = () => {
       try {
         const result = await api.getFearGreedIndex();
         setData(result);
-        setQuoteIdx(Math.floor(Math.random() * 2) + 1); 
+        // Randomly select from available quotes (now up to 5)
+        setQuoteIdx(Math.floor(Math.random() * 5) + 1); 
       } catch (error) {
         console.error("Failed to fetch F&G index", error);
       } finally {
@@ -140,6 +136,7 @@ const ThePulse: React.FC = () => {
     : 'eg';
   
   let finalQuoteIdx = quoteIdx;
+  // Fallback to 1 if random index doesn't exist in translation file
   if (!TRANSLATIONS['en'][`quote_${quoteKeySuffix}_${finalQuoteIdx}`]) finalQuoteIdx = 1;
   
   const quoteK = `quote_${quoteKeySuffix}_${finalQuoteIdx}`;
@@ -194,7 +191,7 @@ const ThePulse: React.FC = () => {
                 
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="border-b border-zinc-800 text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-wider">
+                        <tr className="border-b border-zinc-800 text-xs font-mono text-zinc-500 uppercase tracking-wider">
                             <th className="p-3 font-normal">{t('col_date')}</th>
                             <th className="p-3 font-normal text-center">{t('col_score')}</th>
                             <th className="p-3 font-normal text-right">{t('col_return')}</th>
@@ -207,45 +204,48 @@ const ThePulse: React.FC = () => {
                                     {new Date(match.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </td>
                                 <td className="p-3 text-center">
-                                    <span className={`px-2 py-0.5 rounded ${Math.abs(match.score - data.value) <= 2 ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>
+                                    <span className={`px-2 py-0.5 rounded text-xs ${Math.abs(match.score - data.value) <= 2 ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>
                                         {match.score}
                                     </span>
                                 </td>
                                 <td className={`p-3 text-right font-bold ${match.subsequentReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                    {match.subsequentReturn > 0 ? '+' : ''}{match.subsequentReturn}%
+                                    <div className="flex items-center justify-end gap-1">
+                                        <span className="text-xs">{match.subsequentReturn >= 0 ? '▲' : '▼'}</span>
+                                        <span>{Math.abs(match.subsequentReturn)}%</span>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 <div className="p-2 bg-zinc-900/30 text-center border-t border-zinc-800">
-                    <p className="text-[10px] text-zinc-500 italic">{t('pattern_desc')}</p>
+                    <p className="text-xs text-zinc-500 italic">{t('pattern_desc')}</p>
                 </div>
             </div>
         )}
 
         {/* Quote Card */}
-        <div className="w-full max-w-2xl mt-6 bg-black border border-zinc-800 rounded-lg p-4 flex gap-4 items-start hover:border-zinc-600 transition-colors group/quote">
-            <div className="hidden md:flex w-10 h-10 rounded bg-zinc-900 items-center justify-center shrink-0 text-xl border border-zinc-800">
+        <div className="w-full max-w-2xl mt-8 bg-black border border-zinc-800 rounded-lg p-4 flex gap-4 items-start hover:border-zinc-600 transition-colors group/quote">
+            <div className="hidden md:flex w-10 h-10 rounded bg-zinc-900 items-center justify-center shrink-0 text-xl border border-zinc-800 text-zinc-500">
                 ❝
             </div>
             <div className="flex-1 text-left">
-                <div className="flex justify-between items-start">
-                    <p className="text-zinc-300 font-medium text-sm md:text-base italic leading-relaxed pr-4">
+                <div className="flex justify-between items-start gap-4">
+                    <p className="text-zinc-300 font-medium text-sm md:text-base italic leading-relaxed">
                         "{displayQuote}"
                     </p>
                     {language !== 'en' && (
                         <button 
                             onClick={() => setShowTranslation(!showTranslation)}
-                            className="text-[10px] font-bold text-zinc-500 border border-zinc-700 px-2 py-1 rounded hover:text-white hover:border-zinc-500 uppercase"
+                            className="text-xs font-bold text-zinc-500 border border-zinc-700 px-2 py-1 rounded hover:text-white hover:border-zinc-500 uppercase shrink-0"
                         >
                             {showTranslation ? t('original_quote') : t('translate_quote')}
                         </button>
                     )}
                 </div>
-                <div className="mt-2 flex flex-col">
+                <div className="mt-3 flex flex-col">
                     <span className="text-xs font-bold text-white uppercase tracking-wide">{displayAuthor}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase">{displayTitle}</span>
+                    <span className="text-[11px] text-zinc-500 uppercase mt-0.5">{displayTitle}</span>
                 </div>
             </div>
         </div>
