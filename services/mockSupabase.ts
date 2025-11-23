@@ -3,7 +3,40 @@ import { FearGreedData, MarketPolls, Comment, SentimentLevel, LeaderboardEntry, 
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper to map numerical value to Level (Fallback logic)
+// --- LOCAL STORAGE KEYS ---
+const STORAGE_KEYS = {
+  POLLS: 'MARKET_PULSE_POLLS_V1',
+  COMMENTS: 'MARKET_PULSE_COMMENTS_V1'
+};
+
+// --- INITIAL DATA ---
+const INITIAL_POLLS: MarketPolls = {
+  nyse: { bullish: 1250, bearish: 890, total: 2140 },
+  nasdaq: { bullish: 1540, bearish: 1620, total: 3160 },
+};
+
+const INITIAL_COMMENTS: Comment[] = [
+  { 
+    id: '1', 
+    nickname: 'AlphaSeeker', 
+    content: 'Vol suppression is reaching critical levels. Expecting a breakout.', 
+    timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    likes: 42,
+    dislikes: 5,
+    replies: []
+  },
+  { 
+    id: '2', 
+    nickname: 'ThetaGang', 
+    content: 'Just selling premium here. Theta decay is my friend.', 
+    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+    likes: 8,
+    dislikes: 2,
+    replies: []
+  },
+];
+
+// --- HELPERS ---
 const getLevelFromValue = (value: number): SentimentLevel => {
   if (value <= 25) return SentimentLevel.ExtremeFear;
   if (value <= 45) return SentimentLevel.Fear;
@@ -21,12 +54,19 @@ const parseSentimentLevel = (apiRating: string): SentimentLevel => {
   return SentimentLevel.Neutral;
 };
 
-// Generate realistic history simulation if API data is missing
+const generateTrendData = (days: number, volatility: number): number[] => {
+    const points = 20;
+    const data = [0];
+    let current = 0;
+    for (let i = 0; i < points; i++) {
+        const change = (Math.random() - 0.45) * volatility; // slight upward bias
+        current += change;
+        data.push(current);
+    }
+    return data;
+};
+
 const generateFallbackHistory = (currentScore: number): HistoryContext => {
-  // Simulation logic:
-  // Extreme Fear/Greed tends to happen less often, so "last seen" is further back.
-  // Neutral happens often.
-  
   let minDays = 7;
   let maxDays = 30;
   
@@ -42,34 +82,55 @@ const generateFallbackHistory = (currentScore: number): HistoryContext => {
   const pastDate = new Date();
   pastDate.setDate(pastDate.getDate() - daysAgo);
 
-  // Volatility simulation based on time passed
   const volatility = Math.sqrt(daysAgo) * 0.6;
-  const trend = Math.random() > 0.5 ? 1 : -1; // Random market direction
+  const trend = Math.random() > 0.4 ? 1 : -1; 
 
   return {
     lastSeenDate: pastDate.toISOString(),
     daysAgo: daysAgo,
     nasdaqChange: parseFloat((Math.random() * volatility * trend).toFixed(2)),
-    nyseChange: parseFloat((Math.random() * (volatility * 0.7) * trend).toFixed(2))
+    nyseChange: parseFloat((Math.random() * (volatility * 0.7) * trend).toFixed(2)),
+    trend: generateTrendData(daysAgo, volatility)
   };
 };
 
-let currentPolls: MarketPolls = {
-  nyse: { bullish: 1250, bearish: 890, total: 2140 },
-  nasdaq: { bullish: 1540, bearish: 1620, total: 3160 },
+// --- LOCAL STORAGE MANAGERS ---
+const loadPolls = (): MarketPolls => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.POLLS);
+        return saved ? JSON.parse(saved) : INITIAL_POLLS;
+    } catch (e) {
+        return INITIAL_POLLS;
+    }
+};
+
+const savePolls = (polls: MarketPolls) => {
+    try {
+        localStorage.setItem(STORAGE_KEYS.POLLS, JSON.stringify(polls));
+    } catch (e) {}
+};
+
+const loadComments = (): Comment[] => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.COMMENTS);
+        return saved ? JSON.parse(saved) : INITIAL_COMMENTS;
+    } catch (e) {
+        return INITIAL_COMMENTS;
+    }
+};
+
+const saveComments = (comments: Comment[]) => {
+    try {
+        localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(comments));
+    } catch (e) {}
 };
 
 export const api = {
-  /**
-   * Fetches the REAL CNN Fear & Greed Index.
-   * Uses Promise.any to race multiple proxies for the fastest response.
-   */
   getFearGreedIndex: async (): Promise<FearGreedData> => {
     const targetUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
     const timestamp = new Date().getTime(); 
     const cacheBuster = `&t=${timestamp}`;
 
-    // Helper: Fetch with strict timeout
     const fetchWithTimeout = async (url: string, timeoutMs = 5000): Promise<any> => {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -86,21 +147,14 @@ export const api = {
 
     let cnnData: any = null;
 
-    // Execute strategies in PARALLEL (Race)
     try {
-      // TypeScript might complain about Promise.any if lib is not set to ES2021+. Casting to any fixes this.
       cnnData = await (Promise as any).any([
-        // Strategy 1: AllOrigins (Raw JSON) - Often reliable
         fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}${cacheBuster}`, 6000),
-        
-        // Strategy 2: CorsProxy.io - Fast when working
         fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}${cacheBuster}`, 6000),
-        
-        // Strategy 3: Direct (Fastest if CORS allowed via extension/browser config)
         fetchWithTimeout(`${targetUrl}?${cacheBuster}`, 2000)
       ]);
     } catch (aggregateError) {
-      console.warn("All live fetch strategies failed or timed out.", aggregateError);
+      console.warn("Live fetch failed.", aggregateError);
     }
 
     if (cnnData && cnnData.fear_and_greed && cnnData.fear_and_greed.score !== undefined) {
@@ -108,33 +162,26 @@ export const api = {
       const rating = cnnData.fear_and_greed.rating; 
       const dataTimestamp = cnnData.fear_and_greed.timestamp;
       
-      // Logic to find Last Occurrence (Déjà Vu)
       let historyContext: HistoryContext | undefined = undefined;
       const historyData = cnnData.fear_and_greed.historical?.data;
 
       if (Array.isArray(historyData) && historyData.length > 5) {
-        // Search backwards, skipping the most recent few points to avoid "yesterday" if it hasn't changed much
-        // We want a meaningful gap.
         for (let i = historyData.length - 10; i >= 0; i--) {
           const pastItem = historyData[i];
-          // Check if score is within +/- 2 points
           if (Math.abs(Math.round(pastItem.y) - score) <= 1) {
              const pastDate = new Date(pastItem.x);
              const daysAgo = Math.floor((new Date().getTime() - pastDate.getTime()) / (1000 * 60 * 60 * 24));
              
-             // Only count it if it was more than a week ago
              if (daysAgo > 7) {
-               // SIMULATE MARKET CHANGE (Since we don't have historical stock API)
-               // This makes the feature "fun" and "plausible" without broken API calls.
-               // Random walk based on days passed.
                const direction = Math.random() > 0.4 ? 1 : -1;
-               const volatility = Math.sqrt(daysAgo) * 0.5; // Volatility increases with time
+               const volatility = Math.sqrt(daysAgo) * 0.5;
                
                historyContext = {
                  lastSeenDate: pastDate.toISOString(),
                  daysAgo: daysAgo,
                  nasdaqChange: parseFloat((Math.random() * volatility * direction).toFixed(2)),
-                 nyseChange: parseFloat((Math.random() * (volatility * 0.7) * direction).toFixed(2))
+                 nyseChange: parseFloat((Math.random() * (volatility * 0.7) * direction).toFixed(2)),
+                 trend: generateTrendData(daysAgo, volatility)
                };
                break;
              }
@@ -142,8 +189,6 @@ export const api = {
         }
       }
 
-      // If API didn't find a match or history was missing, generate a realistic fallback
-      // This ensures the "Deja Vu" feature ALWAYS shows up.
       if (!historyContext) {
         historyContext = generateFallbackHistory(score);
       }
@@ -156,74 +201,87 @@ export const api = {
       };
     }
 
-    // Emergency Fallback: Returns a realistic simulation if API is totally down
-    console.error("All fetch strategies failed. Using fallback simulation.");
-    const fallbackScore = Math.floor(Math.random() * 40) + 20; // Random fear/neutral
+    const fallbackScore = Math.floor(Math.random() * 40) + 20; 
     return {
       value: fallbackScore,
       level: getLevelFromValue(fallbackScore),
       timestamp: new Date().toISOString(),
-      history: generateFallbackHistory(fallbackScore) // Always provide history even in fallback
+      history: generateFallbackHistory(fallbackScore)
     };
   },
 
   getPollResults: async (): Promise<MarketPolls> => {
-    await delay(600);
-    return currentPolls;
+    await delay(200); // Slight delay for realism
+    return loadPolls();
   },
 
   votePoll: async (market: 'nyse' | 'nasdaq', type: 'bull' | 'bear'): Promise<MarketPolls> => {
     await delay(300);
-    const target = currentPolls[market];
+    const current = loadPolls();
+    const target = current[market];
     const newCount = {
       bullish: type === 'bull' ? target.bullish + 1 : target.bullish,
       bearish: type === 'bear' ? target.bearish + 1 : target.bearish,
       total: target.total + 1
     };
-    currentPolls = { ...currentPolls, [market]: newCount };
-    return currentPolls;
+    const updated = { ...current, [market]: newCount };
+    savePolls(updated);
+    return updated;
   },
 
   getComments: async (): Promise<Comment[]> => {
-    await delay(700);
-    return [
-      { 
-        id: '1', 
-        nickname: 'ShortSqueeze', 
-        content: 'VIX is spiking. I am loading up on puts.', 
-        timestamp: new Date(Date.now() - 1000 * 60 * 5),
-        likes: 42,
-        dislikes: 5,
-        replies: []
-      },
-      { 
-        id: '2', 
-        nickname: 'DiamondHands', 
-        content: 'Just a correction. HODL.', 
-        timestamp: new Date(Date.now() - 1000 * 60 * 15),
-        likes: 8,
-        dislikes: 22,
-        replies: []
-      },
-    ];
+    await delay(200);
+    return loadComments();
   },
 
   postComment: async (nickname: string, content: string, parentId?: string): Promise<Comment> => {
     await delay(400);
-    return {
+    const allComments = loadComments();
+    
+    const newC: Comment = {
       id: Math.random().toString(36).substr(2, 9),
       nickname,
       content,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       likes: 0,
       dislikes: 0,
       replies: []
     };
+
+    if (!parentId) {
+        saveComments([newC, ...allComments]);
+        return newC;
+    } else {
+        const addReply = (list: Comment[]): Comment[] => {
+            return list.map(c => {
+                if (c.id === parentId) {
+                    return { ...c, replies: [...c.replies, newC] };
+                }
+                return { ...c, replies: addReply(c.replies) };
+            });
+        };
+        saveComments(addReply(allComments));
+        return newC;
+    }
   },
 
   voteComment: async (commentId: string, type: 'like' | 'dislike'): Promise<void> => {
-    await delay(200);
-    return;
+    // This is a "fire and forget" in this mock implementation,
+    // but we should update local storage for realism.
+    const allComments = loadComments();
+    const updateVotes = (list: Comment[]): Comment[] => {
+        return list.map(c => {
+            if (c.id === commentId) {
+                return { 
+                    ...c, 
+                    likes: type === 'like' ? c.likes + 1 : c.likes,
+                    dislikes: type === 'dislike' ? c.dislikes + 1 : c.dislikes
+                };
+            }
+            return { ...c, replies: updateVotes(c.replies) };
+        });
+    };
+    saveComments(updateVotes(allComments));
   },
 
   getLeaderboard: async (): Promise<LeaderboardEntry[]> => {

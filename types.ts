@@ -14,6 +14,7 @@ export interface HistoryContext {
   daysAgo: number;
   nasdaqChange: number;
   nyseChange: number;
+  trend: number[]; // Array for mini-chart
 }
 
 export interface FearGreedData {
@@ -23,10 +24,10 @@ export interface FearGreedData {
   history?: HistoryContext;
 }
 
-export interface Quote {
-  text: string;
-  author: string;
-  title: string; // e.g. "Founder of Bridgewater"
+export interface QuoteDef {
+  textKey: string;
+  authorKey: string;
+  titleKey: string;
 }
 
 export interface SinglePollResult {
@@ -44,7 +45,7 @@ export interface Comment {
   id: string;
   nickname: string;
   content: string;
-  timestamp: Date;
+  timestamp: string; // Changed to string for JSON serialization
   likes: number;
   dislikes: number;
   replies: Comment[];
@@ -52,10 +53,9 @@ export interface Comment {
 
 export interface SentimentConfig {
   level: SentimentLevel;
-  emoji: string;
-  bgColor: string; // Tailwind class for solid fallback
-  gradient: string; // Tailwind class for gradient
-  textColor: string; // Tailwind class
+  iconPath: string; // SVG Path data instead of emoji
+  color: string; // Main color hex or tailwind class base
+  gradient: string; 
   messageKey: string; 
   range: [number, number];
 }
