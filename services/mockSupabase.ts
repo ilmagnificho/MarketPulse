@@ -60,8 +60,8 @@ const BOT_MESSAGES = [
 
 // Current Simulation State for Tickers
 let currentTickers: MarketTickers = {
-  nyse: { price: 5842.50, change: 12.50, changePercent: 0.21 }, // S&P 500 proxy
-  nasdaq: { price: 20240.75, change: -45.20, changePercent: -0.22 }, // Nasdaq 100 proxy
+  nyse: { price: 5842.50, change: 12.50, changePercent: 0.21 }, // S&P 500
+  nasdaq: { price: 24054.38, change: 185.19, changePercent: 0.77 }, // Nasdaq 100
   isOpen: true,
   status: 'OPEN'
 };
@@ -151,7 +151,7 @@ const fetchRealTickerData = async (): Promise<MarketTickers> => {
   const status = getMarketStatus();
 
   try {
-    const symbols = ['^GSPC', '^IXIC'];
+    const symbols = ['^GSPC', '^NDX'];
     const timestamp = Date.now();
 
     // Try multiple CORS proxies in sequence
@@ -677,6 +677,32 @@ export const api = {
     notifyComments(updated);
   },
 
-  getLeaderboard: async (): Promise<LeaderboardEntry[]> => [],
-  submitPrediction: async (nickname: string, prediction: number): Promise<void> => { }
+  getLeaderboard: async (): Promise<LeaderboardEntry[]> => {
+    // Generate mock leaderboard data
+    // In a real implementation, this would fetch from a database
+    const mockPredictors = [
+      { nickname: 'QuantKing', correctPredictions: 47, totalPredictions: 50 },
+      { nickname: 'BullWhisperer', correctPredictions: 42, totalPredictions: 48 },
+      { nickname: 'MarketOracle', correctPredictions: 38, totalPredictions: 45 },
+      { nickname: 'DiamondHands', correctPredictions: 35, totalPredictions: 42 },
+      { nickname: 'TrendMaster', correctPredictions: 31, totalPredictions: 40 },
+      { nickname: 'AlphaSeeker', correctPredictions: 28, totalPredictions: 38 },
+      { nickname: 'BearSlayer', correctPredictions: 25, totalPredictions: 35 },
+      { nickname: 'ChartWizard', correctPredictions: 22, totalPredictions: 32 },
+      { nickname: 'VixHunter', correctPredictions: 19, totalPredictions: 30 },
+      { nickname: 'MoonShot', correctPredictions: 16, totalPredictions: 28 },
+    ];
+
+    return mockPredictors.map((p, idx) => ({
+      rank: idx + 1,
+      nickname: p.nickname,
+      prediction: p.totalPredictions,
+      accuracy: `${Math.round((p.correctPredictions / p.totalPredictions) * 100)}%`
+    }));
+  },
+
+  submitPrediction: async (nickname: string, prediction: number): Promise<void> => {
+    // In a real implementation, this would save to a database
+    console.log(`Prediction submitted: ${nickname} predicts ${prediction}`);
+  }
 };
