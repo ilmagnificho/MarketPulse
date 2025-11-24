@@ -9,15 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#050505" />
 
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LCTB2E21FK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google Analytics (Replace G-XXXXXXXXXX with your actual Measurement ID) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      // Logic to exclude developer/localhost from analytics
+      // To exclude yourself in production, run this in console: localStorage.setItem('exclude_ga', 'true')
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const isExcluded = window.localStorage.getItem('exclude_ga') === 'true';
 
-  gtag('config', 'G-LCTB2E21FK');
-</script>
+      if (!isLocalhost && !isExcluded) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+      } else {
+        console.log('Google Analytics tracking disabled for this session.');
+      }
+    </script>
     
     <!-- Tailwind CSS CDN for immediate rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -129,19 +137,18 @@
         color: white;
       }
     </style>
-
-    <script type="importmap">
-    {
-      "imports": {
-        "vite": "https://aistudiocdn.com/vite@^7.2.4",
-        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-        "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-        "react/": "https://aistudiocdn.com/react@^19.2.0/",
-        "react": "https://aistudiocdn.com/react@^19.2.0"
-      }
-    }
-    </script>
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
