@@ -24,7 +24,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_neutral: "Market is undecided. Volatility is compressed as traders await a catalyst.",
     pulse_greed: "Buying pressure is high. Momentum is strong but risk/reward is worsening.",
     pulse_extreme_greed: "Extreme euphoria. Markets are stretched and vulnerable to a correction.",
-    last_updated: "UPDATED",
+    last_updated: "LAST UPDATED",
     syncing: "DECODING SIGNAL...",
     
     zone_extreme_fear: "HEAVY DISCOUNT ZONE",
@@ -187,7 +187,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulse_neutral: "방향성이 없습니다. 트레이더들이 재료를 기다리며 관망하고 있습니다.",
     pulse_greed: "매수세가 강합니다. 모멘텀은 좋지만 손익비는 점차 나빠지고 있습니다.",
     pulse_extreme_greed: "극도의 과열 상태입니다. 시장이 무리하게 뻗어있어 조정 위험이 큽니다.",
-    last_updated: "업데이트 완료",
+    last_updated: "최근 업데이트",
     syncing: "시그널 분석 중...",
     
     zone_extreme_fear: "과매도 / 바겐세일 구간",
