@@ -60,6 +60,7 @@ export interface MarketTickers {
   isOpen: boolean;
   status: string; // 'OPEN', 'CLOSED'
   reason?: string; // 'WEEKEND', 'HOLIDAY', 'AFTER_HOURS'
+  nextOpen?: number; // Timestamp for next open
 }
 
 export interface SectorPerformance {

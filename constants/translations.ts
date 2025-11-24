@@ -34,7 +34,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     zone_extreme_greed: "OVERBOUGHT / RISK ZONE",
 
     // Quotes
-    // Extreme Fear
     quote_ef_1: "Be greedy when others are fearful.",
     author_ef_1: "Warren Buffett",
     title_ef_1: "Berkshire Hathaway",
@@ -51,7 +50,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     author_ef_5: "Philip Fisher",
     title_ef_5: "Growth Investing Pioneer",
     
-    // Fear
     quote_f_1: "In the short run, the market is a voting machine but in the long run, it is a weighing machine.",
     author_f_1: "Benjamin Graham",
     title_f_1: "Value Investing Father",
@@ -68,7 +66,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     author_f_5: "Peter Lynch",
     title_f_5: "Magellan Fund Manager",
     
-    // Neutral
     quote_n_1: "I don't look to jump over 7-foot bars: I look around for 1-foot bars that I can step over.",
     author_n_1: "Warren Buffett",
     title_n_1: "Oracle of Omaha",
@@ -85,7 +82,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     author_n_5: "Warren Buffett",
     title_n_5: "Oracle of Omaha",
 
-    // Greed
     quote_g_1: "The four most dangerous words in investing are: 'This time it's different.'",
     author_g_1: "Sir John Templeton",
     title_g_1: "Legendary Investor",
@@ -102,7 +98,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     author_g_5: "Joe Kennedy",
     title_g_5: "Investor",
 
-    // Extreme Greed
     quote_eg_1: "Be fearful when others are greedy.",
     author_eg_1: "Warren Buffett",
     title_eg_1: "Berkshire Hathaway",
@@ -144,6 +139,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     comment_placeholder: "Share your analysis...",
     post: "POST",
     reply: "REPLY",
+    
+    // Sorting & Voting
+    sort_hot: "HOT",
+    sort_live: "LIVE",
+    points: "pts",
 
     sector_heatmap: "SECTOR HEATMAP",
     sector_tech: "TECH",
@@ -158,6 +158,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     status_open: "LIVE",
     status_closed: "CLOSED",
+    opens_in: "Opens in",
+    time_h: "h",
+    time_m: "m",
     reason_weekend: "WEEKEND",
     reason_holiday: "HOLIDAY",
     reason_after_hours: "AFTER HOURS",
@@ -299,6 +302,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     post: "등록",
     reply: "답글",
 
+    sort_hot: "인기순",
+    sort_live: "최신순",
+    points: "점",
+
     sector_heatmap: "섹터별 흐름",
     sector_tech: "기술주",
     sector_finance: "금융주",
@@ -312,6 +319,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     status_open: "실시간",
     status_closed: "휴장",
+    opens_in: "개장까지",
+    time_h: "시간",
+    time_m: "분",
     reason_weekend: "주말",
     reason_holiday: "공휴일",
     reason_after_hours: "장마감",
@@ -453,6 +463,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     post: "发布",
     reply: "回复",
 
+    sort_hot: "热门",
+    sort_live: "最新",
+    points: "点",
+
     sector_heatmap: "板块热力图",
     sector_tech: "科技",
     sector_finance: "金融",
@@ -466,6 +480,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     status_open: "实时",
     status_closed: "休市",
+    opens_in: "距开盘",
+    time_h: "小时",
+    time_m: "分",
     reason_weekend: "周末",
     reason_holiday: "假期",
     reason_after_hours: "盘后",
@@ -607,6 +624,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     post: "投稿",
     reply: "返信",
 
+    sort_hot: "人気",
+    sort_live: "最新",
+    points: "pt",
+
     sector_heatmap: "セクターヒートマップ",
     sector_tech: "ハイテク",
     sector_finance: "金融",
@@ -620,6 +641,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     status_open: "LIVE",
     status_closed: "休場",
+    opens_in: "開始まで",
+    time_h: "時間",
+    time_m: "分",
     reason_weekend: "週末",
     reason_holiday: "祝日",
     reason_after_hours: "時間外",
@@ -761,6 +785,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     post: "PUBLICAR",
     reply: "RESPONDER",
 
+    sort_hot: "POPULAR",
+    sort_live: "RECIENTE",
+    points: "pts",
+
     sector_heatmap: "MAPA DE CALOR",
     sector_tech: "TECNO",
     sector_finance: "FINANZAS",
@@ -774,6 +802,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     status_open: "EN VIVO",
     status_closed: "CERRADO",
+    opens_in: "Abre en",
+    time_h: "h",
+    time_m: "m",
     reason_weekend: "FIN DE SEMANA",
     reason_holiday: "FERIADO",
     reason_after_hours: "POST-CIERRE",

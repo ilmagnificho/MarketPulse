@@ -16,6 +16,37 @@ const PollCard: React.FC<{
     const bearPct = 100 - bullPct;
     const isUp = ticker ? ticker.change >= 0 : true;
 
+    // Market Status & Countdown Logic
+    const isMarketOpen = ticker?.isOpen;
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        if (!ticker?.nextOpen || isMarketOpen) {
+            setTimeLeft('');
+            return;
+        }
+        
+        const updateTimer = () => {
+            const now = Date.now();
+            const diff = (ticker.nextOpen || 0) - now;
+            if (diff <= 0) {
+                setTimeLeft('');
+                return;
+            }
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            setTimeLeft(`${hours}${t('time_h')} ${minutes}${t('time_m')}`);
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, [ticker?.nextOpen, isMarketOpen, t]);
+
+    const statusText = isMarketOpen ? t('status_open') : t('status_closed');
+    const reasonText = !isMarketOpen && ticker?.reason ? ` • ${t('reason_' + ticker.reason.toLowerCase())}` : '';
+    const countdownText = !isMarketOpen && timeLeft ? ` • ${t('opens_in')} ${timeLeft}` : '';
+
     return (
         <div className="app-card p-6 mb-6 group relative overflow-hidden">
              {/* Neon Border Gradient on Hover */}
@@ -25,11 +56,27 @@ const PollCard: React.FC<{
             <div className="flex justify-between items-start mb-6">
                 <div>
                     <h3 className="text-xl font-bold text-white tracking-tight drop-shadow-md">{t(label)}</h3>
-                    <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">
-                        {label.includes('nyse') ? t('spx_index') : t('ndx_index')}
-                    </span>
+                    <div className="flex flex-col mt-1">
+                        <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
+                            {label.includes('nyse') ? t('spx_index') : t('ndx_index')}
+                        </span>
+                    </div>
                 </div>
-                <div className="text-right">
+                
+                {/* Right Side: Status Badge & Price */}
+                <div className="flex flex-col items-end">
+                    {/* Status Badge */}
+                    <div className={`mb-2 flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${isMarketOpen ? 'bg-neon-green/10 border-neon-green/20 text-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]' : 'bg-gray-700/40 border-gray-600/30 text-gray-300'}`}>
+                         {isMarketOpen ? (
+                             <>
+                                <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse"></span>
+                                {statusText}
+                             </>
+                         ) : (
+                             <span>{statusText}{reasonText}{countdownText}</span>
+                         )}
+                    </div>
+
                     <div className="text-xl font-mono font-bold text-white text-glow">
                         ${ticker?.price.toLocaleString(undefined, {minimumFractionDigits: 2})}
                     </div>
@@ -48,6 +95,7 @@ const PollCard: React.FC<{
                     >
                         <span className="relative z-10 flex items-center gap-2 font-bold tracking-wide">
                             {t('bullish')} 
+                            {/* UP Arrow Icon */}
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
                         </span>
                         <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
@@ -58,6 +106,7 @@ const PollCard: React.FC<{
                     >
                          <span className="flex items-center gap-2 font-bold tracking-wide">
                             {t('bearish')} 
+                            {/* DOWN Arrow Icon */}
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
                         </span>
                     </button>
@@ -92,19 +141,81 @@ const PollCard: React.FC<{
     );
 };
 
-const ChatItem: React.FC<{ comment: Comment }> = ({ comment }) => {
+// Recursive Comment Thread Component
+const CommentThread: React.FC<{ 
+    comment: Comment, 
+    onVote: (id: string, type: 'like' | 'dislike') => void, 
+    onReply: (parentId: string, content: string, nick: string) => void,
+    depth?: number 
+}> = ({ comment, onVote, onReply, depth = 0 }) => {
+    const { t } = useLanguage();
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyText, setReplyText] = useState('');
+    const [replyNick, setReplyNick] = useState('');
+
+    const handleReplySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (replyText.trim() && replyNick.trim()) {
+            onReply(comment.id, replyText, replyNick);
+            setIsReplying(false);
+            setReplyText('');
+        }
+    };
+
     return (
-        <div className="flex gap-4 py-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors px-3 rounded-xl -mx-2 animate-fade-in-up">
-            <div className="w-10 h-10 rounded-xl bg-gray-800 border border-white/10 flex items-center justify-center shrink-0 text-sm font-bold text-gray-400 shadow-inner">
-                {comment.nickname.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-bold text-neon-blue drop-shadow-sm">{comment.nickname}</span>
-                    <span className="text-[10px] text-gray-600 font-mono uppercase tracking-wider">{new Date(comment.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+        <div className={`flex flex-col ${depth > 0 ? 'ml-4 border-l-2 border-white/5 pl-4 mt-2' : 'border-b border-white/5 pb-4 mb-4'}`}>
+            <div className="flex gap-3">
+                 <div className="w-8 h-8 rounded-lg bg-gray-800 border border-white/10 flex items-center justify-center shrink-0 text-xs font-bold text-gray-400 shadow-inner">
+                    {comment.nickname.charAt(0).toUpperCase()}
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed font-light">{comment.content}</p>
+                <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-neon-blue drop-shadow-sm">{comment.nickname}</span>
+                        <span className="text-[10px] text-gray-500 font-mono">{new Date(comment.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <p className="text-sm text-gray-300 leading-relaxed font-light mb-2">{comment.content}</p>
+                    
+                    {/* Actions: Vote & Reply */}
+                    <div className="flex items-center gap-4 text-gray-500 text-xs font-bold">
+                        <div className="flex items-center gap-1 bg-white/5 rounded px-2 py-0.5">
+                             <button onClick={() => onVote(comment.id, 'like')} className="hover:text-neon-green transition-colors">▲</button>
+                             <span className="font-mono text-[10px] min-w-[12px] text-center">{comment.likes - comment.dislikes}</span>
+                             <button onClick={() => onVote(comment.id, 'dislike')} className="hover:text-neon-red transition-colors">▼</button>
+                        </div>
+                        <button onClick={() => setIsReplying(!isReplying)} className="hover:text-white transition-colors uppercase tracking-wider text-[10px]">{t('reply')}</button>
+                    </div>
+
+                    {/* Reply Input */}
+                    {isReplying && (
+                        <form onSubmit={handleReplySubmit} className="mt-3 flex flex-col gap-2 animate-fade-in">
+                            <input 
+                                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-gray-600 focus:border-neon-blue outline-none"
+                                placeholder={t('nickname_placeholder')}
+                                value={replyNick}
+                                onChange={e => setReplyNick(e.target.value)}
+                            />
+                            <div className="flex gap-2">
+                                <input 
+                                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-gray-600 focus:border-neon-blue outline-none"
+                                    placeholder={t('comment_placeholder')}
+                                    value={replyText}
+                                    onChange={e => setReplyText(e.target.value)}
+                                />
+                                <button type="submit" className="bg-neon-blue/20 text-neon-blue border border-neon-blue/50 rounded px-3 py-1 text-xs hover:bg-neon-blue/30">{t('post')}</button>
+                            </div>
+                        </form>
+                    )}
+                </div>
             </div>
+
+            {/* Nested Replies */}
+            {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-2">
+                    {comment.replies.map(reply => (
+                        <CommentThread key={reply.id} comment={reply} onVote={onVote} onReply={onReply} depth={depth + 1} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
@@ -117,6 +228,7 @@ const TheCrowd: React.FC = () => {
   const [userVotes, setUserVotes] = useState<{nyse: boolean, nasdaq: boolean}>({ nyse: false, nasdaq: false });
   const [newComment, setNewComment] = useState('');
   const [nickname, setNickname] = useState('');
+  const [sortBy, setSortBy] = useState<'hot' | 'live'>('hot');
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -125,13 +237,6 @@ const TheCrowd: React.FC = () => {
     const u3 = api.subscribeToTicker(setTickers);
     return () => { u1(); u2(); u3(); };
   }, []);
-
-  // Auto-scroll to top when new comment arrives
-  useEffect(() => {
-      if (chatRef.current) {
-          chatRef.current.scrollTop = 0;
-      }
-  }, [comments]);
 
   const handleVote = async (market: 'nyse' | 'nasdaq', type: 'bull' | 'bear') => {
     if (userVotes[market]) return;
@@ -144,6 +249,31 @@ const TheCrowd: React.FC = () => {
     if (!nickname.trim() || !newComment.trim()) return;
     await api.postComment(nickname, newComment);
     setNewComment('');
+  };
+
+  const handleReply = async (parentId: string, content: string, nick: string) => {
+      await api.postComment(nick, content, parentId);
+  };
+
+  const handleCommentVote = async (id: string, type: 'like' | 'dislike') => {
+      await api.voteComment(id, type);
+  };
+
+  // Sorting Logic
+  const getSortedComments = () => {
+      // Deep copy to avoid mutating state directly during sort
+      const sortList = (list: Comment[]): Comment[] => {
+          return list.map(c => ({...c, replies: sortList(c.replies)})).sort((a, b) => {
+              if (sortBy === 'hot') {
+                  const scoreA = a.likes - a.dislikes;
+                  const scoreB = b.likes - b.dislikes;
+                  return scoreB - scoreA; // Descending
+              } else {
+                  return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(); // Newest first
+              }
+          });
+      };
+      return sortList(comments);
   };
 
   return (
@@ -171,18 +301,42 @@ const TheCrowd: React.FC = () => {
 
         {/* Chat / Feed */}
         <div className="app-card overflow-hidden mt-8 border-t-2 border-t-neon-blue/20">
+            {/* Toolbar */}
             <div className="p-4 border-b border-white/10 bg-black/40 flex justify-between items-center backdrop-blur-md">
-                <h3 className="font-bold text-white text-xs uppercase tracking-widest flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    {t('the_pit')}
-                </h3>
+                <div className="flex items-center gap-4">
+                    <h3 className="font-bold text-white text-xs uppercase tracking-widest flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        {t('the_pit')}
+                    </h3>
+                    <div className="flex bg-white/10 rounded-lg p-0.5">
+                        <button 
+                            onClick={() => setSortBy('hot')} 
+                            className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${sortBy === 'hot' ? 'bg-neon-blue text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            {t('sort_hot')}
+                        </button>
+                        <button 
+                            onClick={() => setSortBy('live')} 
+                            className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${sortBy === 'live' ? 'bg-neon-blue text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            {t('sort_live')}
+                        </button>
+                    </div>
+                </div>
                 <span className="text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20 px-2 py-0.5 rounded font-bold animate-pulse-slow shadow-[0_0_8px_rgba(16,185,129,0.2)]">
                     {comments.length} ONLINE
                 </span>
             </div>
             
-            <div ref={chatRef} className="h-[350px] overflow-y-auto custom-scrollbar p-4 bg-gradient-to-b from-black/60 to-black/20">
-                {comments.map(c => <ChatItem key={c.id} comment={c} />)}
+            <div ref={chatRef} className="h-[450px] overflow-y-auto custom-scrollbar p-4 bg-gradient-to-b from-black/60 to-black/20">
+                {getSortedComments().map(c => (
+                    <CommentThread 
+                        key={c.id} 
+                        comment={c} 
+                        onVote={handleCommentVote} 
+                        onReply={handleReply}
+                    />
+                ))}
             </div>
 
             {/* Input Area */}

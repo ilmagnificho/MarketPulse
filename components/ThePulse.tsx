@@ -149,7 +149,7 @@ const ThePulse: React.FC = () => {
   const { t } = useLanguage();
   const [data, setData] = useState<FearGreedData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showTranslation, setShowTranslation] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
   const [quoteIdx, setQuoteIdx] = useState(1);
 
   useEffect(() => {
@@ -192,9 +192,10 @@ const ThePulse: React.FC = () => {
   const authorK = `author_${quoteKeySuffix}_${finalQuoteIdx}`;
   const titleK = `title_${quoteKeySuffix}_${finalQuoteIdx}`;
 
-  const displayQuote = showTranslation ? t(quoteK) : TRANSLATIONS['en'][quoteK];
-  const displayAuthor = showTranslation ? t(authorK) : TRANSLATIONS['en'][authorK];
-  const displayTitle = showTranslation ? t(titleK) : TRANSLATIONS['en'][titleK];
+  // REVERSED LOGIC: Default is Local Language via t(), Toggle is English Original
+  const displayQuote = showOriginal ? TRANSLATIONS['en'][quoteK] : t(quoteK);
+  const displayAuthor = showOriginal ? TRANSLATIONS['en'][authorK] : t(authorK);
+  const displayTitle = showOriginal ? TRANSLATIONS['en'][titleK] : t(titleK);
 
   return (
     <section className="w-full max-w-md mx-auto space-y-6">
@@ -285,8 +286,8 @@ const ThePulse: React.FC = () => {
                <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400 border border-indigo-500/30">
                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 13.1216 16 12.017 16H9C9.00001 15 9.00001 15 9.00001 15C9.00001 11.5163 10.9753 8.35338 14.1685 6.78453L15.068 6.34259L14.1856 5.44441C13.626 4.87483 12.8631 4.56214 12.068 4.56824C9.52229 4.58882 7.00001 7.15234 7.00001 11V16C7.00001 18.7614 9.23858 21 12.0001 21H14.017ZM8.00001 23H12.0001C15.8661 23 19.0001 19.866 19.0001 16V11C19.0001 5.59022 15.6596 2.01255 12.0279 2.00019C10.7493 1.99042 9.53036 2.49252 8.63604 3.40259L4.36423 7.74996C3.99395 8.12683 3.90637 8.68352 4.13962 9.14371C4.46914 9.79383 4.90483 10.3957 5.42854 10.9287C5.15392 11.5546 5.00001 12.2514 5.00001 13V16C5.00001 17.6569 6.34316 19 8.00001 19V23Z" /></svg>
                </div>
-               <button onClick={() => setShowTranslation(!showTranslation)} className="text-xs font-bold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1 transition-all">
-                   {showTranslation ? 'EN' : t('translate_quote')}
+               <button onClick={() => setShowOriginal(!showOriginal)} className="text-xs font-bold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1 transition-all">
+                   {showOriginal ? t('translate_quote') : t('original_quote')}
                </button>
           </div>
           <p className="text-xl font-medium text-gray-100 mb-4 leading-snug relative z-10 italic">"{displayQuote}"</p>

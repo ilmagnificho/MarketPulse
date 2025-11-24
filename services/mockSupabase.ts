@@ -59,7 +59,6 @@ const BOT_MESSAGES = [
 ];
 
 // Current Simulation State for Tickers
-// Updated default NASDAQ price to reflect realistic NDX levels (~21k range)
 let currentTickers: MarketTickers = {
   nyse: { price: 5910.50, change: 12.50, changePercent: 0.21 }, // S&P 500
   nasdaq: { price: 20950.25, change: -45.20, changePercent: -0.22 }, // Nasdaq 100
@@ -78,7 +77,7 @@ let currentSectors: SectorPerformance[] = [
 ];
 
 // --- MARKET STATUS HELPERS ---
-const getMarketStatus = (): { isOpen: boolean, status: string, reason?: string } => {
+const getMarketStatus = (): { isOpen: boolean, status: string, reason?: string, nextOpen?: number } => {
   const now = new Date();
   
   // Convert to EST (New York Time)
@@ -88,19 +87,46 @@ const getMarketStatus = (): { isOpen: boolean, status: string, reason?: string }
   const day = estDate.getDay(); // 0 = Sunday, 6 = Saturday
   const hour = estDate.getHours();
   const minute = estDate.getMinutes();
-
-  // 1. Check Weekend
-  if (day === 0 || day === 6) {
-    return { isOpen: false, status: 'CLOSED', reason: 'WEEKEND' };
-  }
-
-  // 2. Check Trading Hours (9:30 AM - 4:00 PM EST)
   const totalMinutes = hour * 60 + minute;
   const marketOpen = 9 * 60 + 30; // 9:30 AM
   const marketClose = 16 * 60;    // 4:00 PM
+
+  // Calculate Next Open
+  let nextOpenDate = new Date(estDate);
+  nextOpenDate.setHours(9, 30, 0, 0);
+
+  // If today is weekend, or if today is Friday/weekday but after open, we might need to shift days
+  // Simple logic:
+  // If currently closed (weekend or after hours), find next weekday at 9:30 AM
   
+  if (day === 0) { // Sunday
+      nextOpenDate.setDate(estDate.getDate() + 1); // Monday
+  } else if (day === 6) { // Saturday
+      nextOpenDate.setDate(estDate.getDate() + 2); // Monday
+  } else if (totalMinutes >= marketClose) { // Weekday After Hours
+      nextOpenDate.setDate(estDate.getDate() + 1); // Tomorrow
+      if (nextOpenDate.getDay() === 6) nextOpenDate.setDate(nextOpenDate.getDate() + 2); // If tomorrow is Sat, go to Mon
+  } else if (totalMinutes < marketOpen) {
+      // Weekday Pre-market, next open is today 9:30, which is already set in nextOpenDate
+  } else {
+      // Market is OPEN (or holiday)
+      // If open, next open is tomorrow
+      nextOpenDate.setDate(estDate.getDate() + 1);
+  }
+
+  // Convert nextOpenDate (which acts like EST) back to local/UTC timestamp logic if needed, 
+  // but simpler is to use the difference relative to `estDate` and add to `now`.
+  const diffMs = nextOpenDate.getTime() - estDate.getTime();
+  const nextOpenTimestamp = now.getTime() + diffMs;
+
+  // 1. Check Weekend
+  if (day === 0 || day === 6) {
+    return { isOpen: false, status: 'CLOSED', reason: 'WEEKEND', nextOpen: nextOpenTimestamp };
+  }
+
+  // 2. Check Trading Hours (9:30 AM - 4:00 PM EST)
   if (totalMinutes < marketOpen || totalMinutes >= marketClose) {
-    return { isOpen: false, status: 'CLOSED', reason: 'AFTER_HOURS' };
+    return { isOpen: false, status: 'CLOSED', reason: 'AFTER_HOURS', nextOpen: nextOpenTimestamp };
   }
 
   // 3. Simple US Holiday Check (Fixed dates for 2024-2025 simplification)
@@ -112,18 +138,17 @@ const getMarketStatus = (): { isOpen: boolean, status: string, reason?: string }
   ];
   
   if (holidays.includes(dateKey)) {
-    return { isOpen: false, status: 'CLOSED', reason: 'HOLIDAY' };
+    // If holiday, next open is tomorrow (handled by weekend check if Friday, etc. but simple +1 works for mid-week)
+    return { isOpen: false, status: 'CLOSED', reason: 'HOLIDAY', nextOpen: nextOpenTimestamp + (24*60*60*1000) }; 
   }
 
-  return { isOpen: true, status: 'OPEN' };
+  return { isOpen: true, status: 'OPEN', nextOpen: undefined };
 };
 
 // --- DATA FETCHING HELPERS ---
 const fetchRealTickerData = async (): Promise<MarketTickers> => {
     const status = getMarketStatus();
     try {
-        // Using Yahoo Finance Chart API via CORS Proxy
-        // ^GSPC = S&P 500, ^NDX = Nasdaq 100
         const symbols = ['^GSPC', '^NDX'];
         const promises = symbols.map(async (sym) => {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
@@ -149,16 +174,17 @@ const fetchRealTickerData = async (): Promise<MarketTickers> => {
             },
             isOpen: status.isOpen,
             status: status.status,
-            reason: status.reason
+            reason: status.reason,
+            nextOpen: status.nextOpen
         };
 
     } catch (e) {
-        // Return existing realistic values if fetch fails
         return {
              ...currentTickers,
              isOpen: status.isOpen,
              status: status.status,
-             reason: status.reason
+             reason: status.reason,
+             nextOpen: status.nextOpen
         };
     }
 };
