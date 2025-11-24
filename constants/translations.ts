@@ -3,7 +3,22 @@ import { Language } from '../types';
 
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   en: {
-    // Pulse
+    // Pulse UI
+    market_sentiment: "MARKET SENTIMENT",
+    historical_data: "HISTORICAL DATA",
+    sentiment_score: "Sentiment Score",
+    previous_close: "Previous Close",
+    one_week_ago: "1 Week Ago",
+    one_month_ago: "1 Month Ago",
+    one_year_ago: "1 Year Ago",
+    
+    // Community UI
+    community_pulse: "COMMUNITY PULSE",
+    spx_index: "SPX Index",
+    ndx_index: "NDX Index",
+    based_on_votes: "Based on {count} community votes",
+    
+    // Pulse Messages
     pulse_extreme_fear: "Investors are panicked. Historical data suggests these levels often mark short-term bottoms.",
     pulse_fear: "Sentiment is cautious. Risk appetite is low, often a precursor to value buying.",
     pulse_neutral: "Market is undecided. Volatility is compressed as traders await a catalyst.",
@@ -130,7 +145,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     post: "POST",
     reply: "REPLY",
 
-    // Sectors & Activity
     sector_heatmap: "SECTOR HEATMAP",
     sector_tech: "TECH",
     sector_finance: "FINANCE",
@@ -152,6 +166,19 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     data_provider: "Data: CNN Business"
   },
   ko: {
+    market_sentiment: "시장 심리",
+    historical_data: "과거 데이터 비교",
+    sentiment_score: "심리 지수",
+    previous_close: "직전 종가",
+    one_week_ago: "1주 전",
+    one_month_ago: "1개월 전",
+    one_year_ago: "1년 전",
+    
+    community_pulse: "커뮤니티 펄스",
+    spx_index: "S&P 500 지수",
+    ndx_index: "나스닥 100 지수",
+    based_on_votes: "{count}명의 트레이더 투표 기반",
+
     pulse_extreme_fear: "투자자들이 공포에 질려있습니다. 역사적으로 이 구간은 단기 바닥일 가능성이 높습니다.",
     pulse_fear: "심리가 위축되었습니다. 위험 선호도가 낮으며, 이는 종종 저가 매수의 기회가 됩니다.",
     pulse_neutral: "방향성이 없습니다. 트레이더들이 재료를 기다리며 관망하고 있습니다.",
@@ -293,6 +320,19 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     data_provider: "데이터: CNN Business"
   },
   zh: {
+    market_sentiment: "市场情绪",
+    historical_data: "历史数据对比",
+    sentiment_score: "情绪指数",
+    previous_close: "昨日收盘",
+    one_week_ago: "1周前",
+    one_month_ago: "1个月前",
+    one_year_ago: "1年前",
+
+    community_pulse: "社区动态",
+    spx_index: "标普500指数",
+    ndx_index: "纳斯达克100指数",
+    based_on_votes: "基于 {count} 位交易者的投票",
+
     pulse_extreme_fear: "极度恐慌。历史数据显示这通常是短期底部。",
     pulse_fear: "情绪谨慎。风险偏好低，通常是吸筹良机。",
     pulse_neutral: "趋势不明。交易者正在观望。",
@@ -434,6 +474,19 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     data_provider: "数据: CNN Business"
   },
   ja: {
+    market_sentiment: "市場センチメント",
+    historical_data: "過去データ比較",
+    sentiment_score: "センチメント指数",
+    previous_close: "前日終値",
+    one_week_ago: "1週間前",
+    one_month_ago: "1ヶ月前",
+    one_year_ago: "1年前",
+
+    community_pulse: "コミュニティ・パルス",
+    spx_index: "S&P 500 指数",
+    ndx_index: "NASDAQ 100 指数",
+    based_on_votes: "{count}名のトレーダー投票に基づく",
+
     pulse_extreme_fear: "パニック状態です。歴史的に短期的な底値圏を示唆します。",
     pulse_fear: "警戒感が高まっています。リスクオフは買い集めの好機となる場合があります。",
     pulse_neutral: "方向感がありません。トレーダーは材料待ちです。",
@@ -575,6 +628,19 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     data_provider: "データ: CNN Business"
   },
   es: {
+    market_sentiment: "SENTIMIENTO DE MERCADO",
+    historical_data: "DATOS HISTÓRICOS",
+    sentiment_score: "Puntuación",
+    previous_close: "Cierre Anterior",
+    one_week_ago: "Hace 1 Sem.",
+    one_month_ago: "Hace 1 Mes",
+    one_year_ago: "Hace 1 Año",
+
+    community_pulse: "PULSO DE LA COMUNIDAD",
+    spx_index: "Índice SPX",
+    ndx_index: "Índice NDX",
+    based_on_votes: "Basado en {count} votos de la comunidad",
+
     pulse_extreme_fear: "Pánico detectado. Históricamente marca suelos a corto plazo.",
     pulse_fear: "Cautela. El apetito de riesgo es bajo, precursor de compras de valor.",
     pulse_neutral: "Sin tendencia. Los operadores esperan un catalizador.",

@@ -6,82 +6,64 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { Language } from './types';
 
 const Header: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   
   return (
-    <header className="w-full py-3 px-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 select-none group">
-            <div className="relative">
-                <div className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_#f43f5e]"></div>
-                <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20"></div>
+    <header className="w-full py-8 px-6 flex items-center justify-between max-w-md mx-auto relative z-10">
+        <div className="flex items-center gap-3">
+            {/* Neon Logo */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-white/20">
+                <span className="text-white font-black text-xl italic">M</span>
             </div>
-            <h1 className="text-lg md:text-xl font-black tracking-tighter italic text-zinc-100">
-              MARKET<span className="text-emerald-500">PULSE</span>
+            <h1 className="text-xl font-black tracking-tighter text-white italic">
+                Market <span className="text-neon-blue text-glow">Pulse</span>
             </h1>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <select 
-              value={language} 
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-black border border-zinc-800 text-zinc-400 text-[10px] font-mono rounded py-1 px-2 focus:outline-none focus:border-emerald-500 cursor-pointer uppercase hover:border-zinc-600 transition-colors"
-            >
-              <option value="en">ENG</option>
-              <option value="ko">KOR</option>
-              <option value="zh">CHN</option>
-              <option value="ja">JPN</option>
-              <option value="es">ESP</option>
-            </select>
-          </div>
         </div>
-      </header>
-  );
-};
-
-const Footer: React.FC = () => {
-  const { t } = useLanguage();
-  return (
-    <footer className="mt-12 py-8 text-center border-t border-zinc-900 bg-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,18,18,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
-      <p className="text-zinc-600 text-[10px] font-mono mb-1 relative z-10">© {new Date().getFullYear()} {t('footer')}</p>
-      <p className="text-zinc-800 text-[10px] uppercase tracking-widest relative z-10">{t('data_provider')}</p>
-    </footer>
-  );
-};
-
-const AppContent: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-black text-zinc-100 selection:bg-emerald-500 selection:text-white flex flex-col font-sans overflow-x-hidden relative">
-      {/* CRT Scanline Effect Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[linear-gradient(rgba(18,18,18,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]"></div>
-      
-      <Header />
-
-      {/* Main Content Container */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 md:py-8 space-y-8 relative z-10">
         
-        {/* A. The Pulse (Hero) */}
-        <section id="the-pulse" className="animate-fade-in-down">
-          <ThePulse />
-        </section>
-
-        {/* B. The Crowd (Community) */}
-        <section id="the-crowd" className="animate-fade-in-up">
-          <TheCrowd />
-        </section>
-
-      </main>
-
-      <Footer />
-    </div>
+        <select 
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value as Language)}
+            className="bg-black/40 text-white border border-white/10 rounded-lg px-2 py-1 text-xs font-mono outline-none focus:border-neon-blue transition-colors appearance-none cursor-pointer"
+        >
+            <option value="en">EN</option>
+            <option value="ko">KR</option>
+            <option value="zh">CN</option>
+            <option value="ja">JP</option>
+            <option value="es">ES</option>
+        </select>
+    </header>
   );
+};
+
+const Dashboard: React.FC = () => {
+    return (
+        <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-neon-purple/30 selection:text-white pb-20 relative overflow-x-hidden">
+            {/* Ambient Background */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[120px] rounded-full"></div>
+                <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-900/5 blur-[100px] rounded-full"></div>
+            </div>
+
+            <Header />
+            
+            <main className="relative z-10 flex flex-col gap-8 px-4 pb-12 w-full max-w-md mx-auto">
+                <ThePulse />
+                {/* TheOracle Removed as requested */}
+                <TheCrowd />
+            </main>
+            
+             <footer className="text-center text-gray-600 text-[10px] pb-8 font-mono tracking-widest uppercase">
+                Market Pulse • v2.1.0 • Alpha
+            </footer>
+        </div>
+    );
 };
 
 const App: React.FC = () => {
   return (
     <LanguageProvider>
-      <AppContent />
+      <Dashboard />
     </LanguageProvider>
   );
 };

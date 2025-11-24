@@ -15,12 +15,20 @@ export interface HistoryEvent {
   subsequentReturn: number; // The market return 1 month after this event
 }
 
+export interface SentimentTimeline {
+  previousClose: number;
+  oneWeekAgo: number;
+  oneMonthAgo: number;
+  oneYearAgo: number;
+}
+
 export interface FearGreedData {
   value: number;
   level: SentimentLevel;
   timestamp: string;
   pastMatches: HistoryEvent[];
   catalysts: string[]; // New: Keywords driving the market
+  timeline?: SentimentTimeline;
 }
 
 export interface QuoteDef {
