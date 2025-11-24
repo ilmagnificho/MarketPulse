@@ -1,34 +1,43 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/mockSupabase';
-import { MarketPolls, SinglePollResult, Comment, MarketTicker } from '../types';
+import { MarketPolls, SinglePollResult, Comment, MarketTicker, MarketTickers } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+
+// Helper interface for market status passed to PollCard
+interface MarketStatus {
+  isOpen: boolean;
+  status: string;
+  reason?: string;
+  nextOpen?: number;
+}
 
 const PollCard: React.FC<{ 
     label: string, 
     data: SinglePollResult | undefined, 
     ticker: MarketTicker | undefined,
+    marketStatus: MarketStatus | undefined, // New prop for status metadata
     hasVoted: boolean,
     onVote: (type: 'bull' | 'bear') => void
-}> = ({ label, data, ticker, hasVoted, onVote }) => {
+}> = ({ label, data, ticker, marketStatus, hasVoted, onVote }) => {
     const { t } = useLanguage();
     const bullPct = data && data.total > 0 ? Math.round((data.bullish / data.total) * 100) : 50;
     const bearPct = 100 - bullPct;
     const isUp = ticker ? ticker.change >= 0 : true;
 
     // Market Status & Countdown Logic
-    const isMarketOpen = ticker?.isOpen;
+    const isMarketOpen = marketStatus?.isOpen;
     const [timeLeft, setTimeLeft] = useState('');
 
     useEffect(() => {
-        if (!ticker?.nextOpen || isMarketOpen) {
+        if (!marketStatus?.nextOpen || isMarketOpen) {
             setTimeLeft('');
             return;
         }
         
         const updateTimer = () => {
             const now = Date.now();
-            const diff = (ticker.nextOpen || 0) - now;
+            const diff = (marketStatus.nextOpen || 0) - now;
             if (diff <= 0) {
                 setTimeLeft('');
                 return;
@@ -41,10 +50,10 @@ const PollCard: React.FC<{
         updateTimer();
         const interval = setInterval(updateTimer, 60000); // Update every minute
         return () => clearInterval(interval);
-    }, [ticker?.nextOpen, isMarketOpen, t]);
+    }, [marketStatus?.nextOpen, isMarketOpen, t]);
 
     const statusText = isMarketOpen ? t('status_open') : t('status_closed');
-    const reasonText = !isMarketOpen && ticker?.reason ? ` • ${t('reason_' + ticker.reason.toLowerCase())}` : '';
+    const reasonText = !isMarketOpen && marketStatus?.reason ? ` • ${t('reason_' + marketStatus.reason.toLowerCase())}` : '';
     const countdownText = !isMarketOpen && timeLeft ? ` • ${t('opens_in')} ${timeLeft}` : '';
 
     return (
@@ -223,7 +232,7 @@ const CommentThread: React.FC<{
 const TheCrowd: React.FC = () => {
   const { t } = useLanguage();
   const [polls, setPolls] = useState<MarketPolls | null>(null);
-  const [tickers, setTickers] = useState<any>(null);
+  const [tickers, setTickers] = useState<MarketTickers | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [userVotes, setUserVotes] = useState<{nyse: boolean, nasdaq: boolean}>({ nyse: false, nasdaq: false });
   const [newComment, setNewComment] = useState('');
@@ -287,7 +296,8 @@ const TheCrowd: React.FC = () => {
         <PollCard 
             label="nyse_label" 
             data={polls?.nyse} 
-            ticker={tickers?.nyse} 
+            ticker={tickers?.nyse}
+            marketStatus={tickers || undefined} // Pass full tickers object as status source
             hasVoted={userVotes.nyse} 
             onVote={(t) => handleVote('nyse', t)} 
         />
@@ -295,6 +305,7 @@ const TheCrowd: React.FC = () => {
             label="nasdaq_label" 
             data={polls?.nasdaq} 
             ticker={tickers?.nasdaq} 
+            marketStatus={tickers || undefined} // Pass full tickers object as status source
             hasVoted={userVotes.nasdaq} 
             onVote={(t) => handleVote('nasdaq', t)} 
         />
