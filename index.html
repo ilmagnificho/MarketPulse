@@ -9,22 +9,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#050505" />
 
-    <!-- Google Analytics (Replace G-XXXXXXXXXX with your actual Measurement ID) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics Setup -->
     <script>
-      // Logic to exclude developer/localhost from analytics
-      // To exclude yourself in production, run this in console: localStorage.setItem('exclude_ga', 'true')
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const isExcluded = window.localStorage.getItem('exclude_ga') === 'true';
+      (function() {
+        // ------------------------------------------------------------------
+        // [STEP 1] Enter your actual Measurement ID here (e.g., G-ABC123456)
+        // ------------------------------------------------------------------
+        const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
 
-      if (!isLocalhost && !isExcluded) {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXXXX');
-      } else {
-        console.log('Google Analytics tracking disabled for this session.');
-      }
+        // Logic to exclude developer/localhost from analytics
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isExcluded = window.localStorage.getItem('exclude_ga') === 'true';
+
+        // Only load GA if:
+        // 1. We have a real ID (not the placeholder)
+        // 2. We are NOT on localhost
+        // 3. We have NOT explicitly excluded ourselves via localStorage
+        if (GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && !isLocalhost && !isExcluded) {
+          // 1. Inject the script tag dynamically
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+          document.head.appendChild(script);
+
+          // 2. Initialize gtag
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', GA_MEASUREMENT_ID);
+          
+          console.log('Crowd Sense: GA initialized (' + GA_MEASUREMENT_ID + ')');
+        } else {
+          console.log('Crowd Sense: Analytics tracking disabled (Localhost, Excluded, or No ID set).');
+        }
+      })();
     </script>
     
     <!-- Tailwind CSS CDN for immediate rendering -->
@@ -48,6 +66,8 @@
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'fade-in-up': 'fadeInUp 0.7s ease-out forwards',
+              'fade-in-down': 'fadeInDown 0.7s ease-out forwards',
+              'slide-in-right': 'slideInRight 0.5s ease-out forwards',
               'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
@@ -58,6 +78,14 @@
               fadeInUp: {
                 '0%': { opacity: '0', transform: 'translateY(20px)' },
                 '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeInDown: {
+                '0%': { opacity: '0', transform: 'translateY(-20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              slideInRight: {
+                '0%': { opacity: '0', transform: 'translateX(20px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
               }
             }
           }
