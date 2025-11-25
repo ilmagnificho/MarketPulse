@@ -15,7 +15,7 @@
         // ------------------------------------------------------------------
         // [STEP 1] Enter your actual Measurement ID here (e.g., G-ABC123456)
         // ------------------------------------------------------------------
-        const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
+        const GA_MEASUREMENT_ID = 'G-LCTB2E21FK'; 
 
         // Logic to exclude developer/localhost from analytics
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -25,7 +25,7 @@
         // 1. We have a real ID (not the placeholder)
         // 2. We are NOT on localhost
         // 3. We have NOT explicitly excluded ourselves via localStorage
-        if (GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && !isLocalhost && !isExcluded) {
+        if (GA_MEASUREMENT_ID !== 'G-LCTB2E21FK' && !isLocalhost && !isExcluded) {
           // 1. Inject the script tag dynamically
           const script = document.createElement('script');
           script.async = true;
