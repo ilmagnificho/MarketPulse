@@ -68,41 +68,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#050505" />
 
-    <!-- Google Analytics Setup -->
-    <script>
-      (function() {
-        // ------------------------------------------------------------------
-        // [STEP 1] Enter your actual Measurement ID here (e.g., G-ABC123456)
-        // ------------------------------------------------------------------
-        const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
+   <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LCTB2E21FK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-        // Logic to exclude developer/localhost from analytics
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const isExcluded = window.localStorage.getItem('exclude_ga') === 'true';
-
-        // Only load GA if:
-        // 1. We have a real ID (not the placeholder)
-        // 2. We are NOT on localhost
-        // 3. We have NOT explicitly excluded ourselves via localStorage
-        if (GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && !isLocalhost && !isExcluded) {
-          // 1. Inject the script tag dynamically
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
-          document.head.appendChild(script);
-
-          // 2. Initialize gtag
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', GA_MEASUREMENT_ID);
-          
-          console.log('Crowd Sense: GA initialized (' + GA_MEASUREMENT_ID + ')');
-        } else {
-          console.log('Crowd Sense: Analytics tracking disabled (Localhost, Excluded, or No ID set).');
-        }
-      })();
-    </script>
+  gtag('config', 'G-LCTB2E21FK');
+</script>
     
     <!-- Tailwind CSS CDN for immediate rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
