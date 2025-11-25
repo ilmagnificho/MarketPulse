@@ -7,7 +7,7 @@ const STORAGE_KEYS = {
   COMMENTS: 'MARKET_PULSE_COMMENTS_V2'
 };
 
-// --- INITIAL DATA ---
+// --- INITIAL DATA (BAIT CONTENT) ---
 const INITIAL_POLLS: MarketPolls = {
   nyse: { bullish: 1250, bearish: 890, total: 2140 },
   nasdaq: { bullish: 1540, bearish: 1620, total: 3160 },
@@ -16,22 +16,31 @@ const INITIAL_POLLS: MarketPolls = {
 const INITIAL_COMMENTS: Comment[] = [
   { 
     id: '1', 
-    nickname: 'AlphaSeeker', 
-    content: 'Vol suppression is reaching critical levels. Expecting a breakout.', 
-    timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    nickname: 'MarketWizard', 
+    content: 'VIX crushing 14. Support at 4200 held perfectly. We squeeze to 4350 next week.', 
+    timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
     likes: 42,
-    dislikes: 5,
+    dislikes: 3,
     replies: []
   },
   { 
     id: '2', 
     nickname: 'ThetaGang', 
-    content: 'Just selling premium here. Theta decay is my friend.', 
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    likes: 8,
-    dislikes: 2,
+    content: 'Selling iron condors here. Volatility is overpriced ahead of CPI.', 
+    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+    likes: 15,
+    dislikes: 1,
     replies: []
   },
+  { 
+    id: '3', 
+    nickname: 'BearWhale', 
+    content: 'Liquidity is drying up on the bid. Smart money is distributing.', 
+    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    likes: 8,
+    dislikes: 12,
+    replies: []
+  }
 ];
 
 // --- REAL-TIME & SIMULATION STATE ---
@@ -44,18 +53,18 @@ const activitySubscribers: Set<SubscriptionCallback<LiveActivity>> = new Set();
 
 const channel = new BroadcastChannel('market_pulse_realtime');
 
-const BOT_NICKS = ['MarketWizard', 'CoinFlipper', 'QuantAlgo', 'HODLer', 'BearWhale', 'JPOW_Fan', 'DeltaOne', 'Satoshi_Ghost', 'LimitOrder', 'StopLossHunter'];
+const BOT_NICKS = ['QuantAlgo', 'HODLer', 'JPOW_Fan', 'DeltaOne', 'Satoshi_Ghost', 'LimitOrder', 'StopLossHunter', 'MacroTourist'];
 const BOT_MESSAGES = [
-    "Liquidity looks thin here.",
-    "Buying the dip.",
-    "Short squeeze incoming?",
-    "Just hit my stop loss.",
-    "Rotation into tech is obvious.",
-    "VIX is waking up.",
-    "Looking for a rejection at this level.",
-    "Gap fill likely.",
-    "Volume is drying up.",
-    "Algo trading taking over."
+    "Volume spike on ES futures.",
+    "Buying the dip for a scalp.",
+    "Anyone watching yields? 10Y is moving.",
+    "Just hit my take profit.",
+    "Tech looks heavy today.",
+    "Rotation into energy sector.",
+    "Looking for a rejection at VWAP.",
+    "Gap fill likely on open.",
+    "Bid stacking up at the round number.",
+    "Algo flush incoming."
 ];
 
 // Current Simulation State for Tickers
@@ -404,9 +413,9 @@ const startSimulation = () => {
         }
     }, 4000);
 
-    // Simulate Comments & Activity
+    // Simulate Comments & Activity (Slowed down to 45s to allow user posts to shine)
     setInterval(() => {
-        if (Math.random() > 0.5) {
+        if (Math.random() > 0.6) {
             const current = loadComments();
             const botNick = BOT_NICKS[Math.floor(Math.random() * BOT_NICKS.length)];
             const newMsg: Comment = {
@@ -418,7 +427,8 @@ const startSimulation = () => {
                 dislikes: 0,
                 replies: []
             };
-            const updated = [newMsg, ...current].slice(0, 50);
+            // Increased slice to 100 to keep more user history
+            const updated = [newMsg, ...current].slice(0, 100);
             saveComments(updated);
             notifyComments(updated);
             
@@ -431,7 +441,7 @@ const startSimulation = () => {
                 timestamp: Date.now()
             });
         }
-    }, 15000);
+    }, 45000);
 
     // Initial Ticker & Sector Fetch
     fetchRealTickerData().then(data => {
@@ -610,7 +620,7 @@ export const api = {
 
     let updatedComments: Comment[];
     if (!parentId) {
-        updatedComments = [newC, ...allComments];
+        updatedComments = [newC, ...allComments].slice(0, 100); // Keep limit consistent
     } else {
         const addReply = (list: Comment[]): Comment[] => {
             return list.map(c => {

@@ -160,11 +160,14 @@ const CommentThread: React.FC<{
     const { t } = useLanguage();
     const [isReplying, setIsReplying] = useState(false);
     const [replyText, setReplyText] = useState('');
-    const [replyNick, setReplyNick] = useState('');
+    // Try to get stored nick, default to empty
+    const [replyNick, setReplyNick] = useState(() => localStorage.getItem('MP_NICKNAME') || '');
 
     const handleReplySubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (replyText.trim() && replyNick.trim()) {
+            // Save nickname
+            localStorage.setItem('MP_NICKNAME', replyNick);
             onReply(comment.id, replyText, replyNick);
             setIsReplying(false);
             setReplyText('');
@@ -236,7 +239,8 @@ const TheCrowd: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [userVotes, setUserVotes] = useState<{nyse: boolean, nasdaq: boolean}>({ nyse: false, nasdaq: false });
   const [newComment, setNewComment] = useState('');
-  const [nickname, setNickname] = useState('');
+  // Init nickname from storage
+  const [nickname, setNickname] = useState(() => localStorage.getItem('MP_NICKNAME') || '');
   const [sortBy, setSortBy] = useState<'hot' | 'live'>('hot');
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -256,6 +260,10 @@ const TheCrowd: React.FC = () => {
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim() || !newComment.trim()) return;
+    
+    // Persist nickname for future sessions
+    localStorage.setItem('MP_NICKNAME', nickname);
+    
     await api.postComment(nickname, newComment);
     setNewComment('');
   };
