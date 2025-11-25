@@ -4,20 +4,65 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crowd Sense</title>
+    
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="Crowd Sense | Market Sentiment & Community Pulse" />
+    <meta name="description" content="Track real-time Fear & Greed index, vote on market trends, and join the trading floor discussion." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://crowdsense.vercel.app/" />
+    <meta property="og:title" content="Crowd Sense | Market Sentiment & Community Pulse" />
+    <meta property="og:description" content="Track real-time Fear & Greed index, vote on market trends, and join the trading floor discussion." />
+    <meta property="og:image" content="https://crowdsense.vercel.app/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://crowdsense.vercel.app/" />
+    <meta property="twitter:title" content="Crowd Sense | Market Sentiment & Community Pulse" />
+    <meta property="twitter:description" content="Track real-time Fear & Greed index, vote on market trends, and join the trading floor discussion." />
+    <meta property="twitter:image" content="https://crowdsense.vercel.app/og-image.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#050505" />
 
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LCTB2E21FK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google Analytics Setup -->
+    <script>
+      (function() {
+        // ------------------------------------------------------------------
+        // [STEP 1] Enter your actual Measurement ID here (e.g., G-ABC123456)
+        // ------------------------------------------------------------------
+        const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
 
-  gtag('config', 'G-LCTB2E21FK');
-</script>
+        // Logic to exclude developer/localhost from analytics
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isExcluded = window.localStorage.getItem('exclude_ga') === 'true';
+
+        // Only load GA if:
+        // 1. We have a real ID (not the placeholder)
+        // 2. We are NOT on localhost
+        // 3. We have NOT explicitly excluded ourselves via localStorage
+        if (GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && !isLocalhost && !isExcluded) {
+          // 1. Inject the script tag dynamically
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+          document.head.appendChild(script);
+
+          // 2. Initialize gtag
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', GA_MEASUREMENT_ID);
+          
+          console.log('Crowd Sense: GA initialized (' + GA_MEASUREMENT_ID + ')');
+        } else {
+          console.log('Crowd Sense: Analytics tracking disabled (Localhost, Excluded, or No ID set).');
+        }
+      })();
+    </script>
     
     <!-- Tailwind CSS CDN for immediate rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -142,11 +187,11 @@
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>
