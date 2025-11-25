@@ -1,10 +1,9 @@
-
 import { FearGreedData, MarketPolls, Comment, SentimentLevel, LeaderboardEntry, HistoryEvent, MarketTickers, SectorPerformance, LiveActivity, SentimentTimeline } from '../types';
 
 // --- LOCAL STORAGE KEYS ---
 const STORAGE_KEYS = {
-  POLLS: 'MARKET_PULSE_POLLS_V2',
-  COMMENTS: 'MARKET_PULSE_COMMENTS_V2'
+  POLLS: 'CROWD_SENSE_POLLS_V2',
+  COMMENTS: 'CROWD_SENSE_COMMENTS_V2'
 };
 
 // --- INITIAL DATA (BAIT CONTENT) ---
@@ -51,7 +50,7 @@ const tickerSubscribers: Set<SubscriptionCallback<MarketTickers>> = new Set();
 const sectorSubscribers: Set<SubscriptionCallback<SectorPerformance[]>> = new Set();
 const activitySubscribers: Set<SubscriptionCallback<LiveActivity>> = new Set();
 
-const channel = new BroadcastChannel('market_pulse_realtime');
+const channel = new BroadcastChannel('crowd_sense_realtime');
 
 const BOT_NICKS = ['QuantAlgo', 'HODLer', 'JPOW_Fan', 'DeltaOne', 'Satoshi_Ghost', 'LimitOrder', 'StopLossHunter', 'MacroTourist'];
 const BOT_MESSAGES = [

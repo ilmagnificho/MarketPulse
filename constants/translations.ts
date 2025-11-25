@@ -1,4 +1,3 @@
-
 import { Language } from '../types';
 
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {
@@ -165,7 +164,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     reason_holiday: "HOLIDAY",
     reason_after_hours: "AFTER HOURS",
     
-    footer: "Market Pulse. Not financial advice.",
+    footer: "Crowd Sense. Not financial advice.",
     data_provider: "Data: CNN Business"
   },
   ko: {
@@ -326,7 +325,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     reason_holiday: "공휴일",
     reason_after_hours: "장마감",
     
-    footer: "Market Pulse. 투자 조언이 아닙니다.",
+    footer: "Crowd Sense. 투자 조언이 아닙니다.",
     data_provider: "데이터: CNN Business"
   },
   zh: {
@@ -487,7 +486,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     reason_holiday: "假期",
     reason_after_hours: "盘后",
     
-    footer: "Market Pulse. 非投资建议。",
+    footer: "Crowd Sense. 非投资建议。",
     data_provider: "数据: CNN Business"
   },
   ja: {
@@ -648,7 +647,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     reason_holiday: "祝日",
     reason_after_hours: "時間外",
     
-    footer: "Market Pulse. 投資助言ではありません。",
+    footer: "Crowd Sense. 投資助言ではありません。",
     data_provider: "データ: CNN Business"
   },
   es: {
@@ -809,7 +808,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     reason_holiday: "FERIADO",
     reason_after_hours: "POST-CIERRE",
     
-    footer: "Market Pulse. No es consejo financiero.",
+    footer: "Crowd Sense. No es consejo financiero.",
     data_provider: "Datos: CNN Business"
   }
 };

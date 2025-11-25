@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ThePulse from './components/ThePulse';
 import TheCrowd from './components/TheCrowd';
@@ -13,10 +12,10 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-3">
             {/* Neon Logo */}
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-white/20">
-                <span className="text-white font-black text-xl italic">M</span>
+                <span className="text-white font-black text-xl italic">C</span>
             </div>
             <h1 className="text-xl font-black tracking-tighter text-white italic">
-                Market <span className="text-neon-blue text-glow">Pulse</span>
+                Crowd <span className="text-neon-blue text-glow">Sense</span>
             </h1>
         </div>
         
@@ -54,7 +53,7 @@ const Dashboard: React.FC = () => {
             </main>
             
              <footer className="text-center text-gray-600 text-[10px] pb-8 font-mono tracking-widest uppercase">
-                Market Pulse • v2.1.0 • Alpha
+                Crowd Sense • v2.1.0 • Alpha
             </footer>
         </div>
     );

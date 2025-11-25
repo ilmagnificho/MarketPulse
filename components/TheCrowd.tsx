@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/mockSupabase';
 import { MarketPolls, SinglePollResult, Comment, MarketTicker, MarketTickers } from '../types';
@@ -161,13 +160,13 @@ const CommentThread: React.FC<{
     const [isReplying, setIsReplying] = useState(false);
     const [replyText, setReplyText] = useState('');
     // Try to get stored nick, default to empty
-    const [replyNick, setReplyNick] = useState(() => localStorage.getItem('MP_NICKNAME') || '');
+    const [replyNick, setReplyNick] = useState(() => localStorage.getItem('CS_NICKNAME') || '');
 
     const handleReplySubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (replyText.trim() && replyNick.trim()) {
             // Save nickname
-            localStorage.setItem('MP_NICKNAME', replyNick);
+            localStorage.setItem('CS_NICKNAME', replyNick);
             onReply(comment.id, replyText, replyNick);
             setIsReplying(false);
             setReplyText('');
@@ -240,7 +239,7 @@ const TheCrowd: React.FC = () => {
   const [userVotes, setUserVotes] = useState<{nyse: boolean, nasdaq: boolean}>({ nyse: false, nasdaq: false });
   const [newComment, setNewComment] = useState('');
   // Init nickname from storage
-  const [nickname, setNickname] = useState(() => localStorage.getItem('MP_NICKNAME') || '');
+  const [nickname, setNickname] = useState(() => localStorage.getItem('CS_NICKNAME') || '');
   const [sortBy, setSortBy] = useState<'hot' | 'live'>('hot');
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -262,7 +261,7 @@ const TheCrowd: React.FC = () => {
     if (!nickname.trim() || !newComment.trim()) return;
     
     // Persist nickname for future sessions
-    localStorage.setItem('MP_NICKNAME', nickname);
+    localStorage.setItem('CS_NICKNAME', nickname);
     
     await api.postComment(nickname, newComment);
     setNewComment('');
